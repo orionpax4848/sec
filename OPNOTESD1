@@ -1,0 +1,51 @@
+ssh -MS /tmp/jump student@10.50.37.30
+ssh -S /tmp/jump -O forward -D 9050 crazy
+proxychains nmap -Pn -T4 -sT -p21 192.168.28.96/27 2>/dev/null
+192.168.28.105 (only ip with ftp open)
+ proxychains nmap -Pn -T4 -sT -p 80 192.168.28.111 2>/dev/null
+proxychains wget -r 192.168.28.111
+(got consulting html)
+(didnt find conference)
+(redo nmap for list of ip again also want to do wget for port 8080/2222)
+proxychains nmap -Pn -T4 -sT -p0 192.168.28.96/27 2>/dev/null
+Nmap scan report for 192.168.28.96
+Nmap scan report for 192.168.28.97
+Nmap scan report for 192.168.28.98
+Nmap scan report for 192.168.28.99
+Nmap scan report for 192.168.28.100
+Nmap scan report for 192.168.28.101
+Nmap scan report for 192.168.28.102
+Nmap scan report for 192.168.28.103
+Nmap scan report for 192.168.28.104
+Nmap scan report for 192.168.28.105
+Nmap scan report for 192.168.28.106
+Nmap scan report for 192.168.28.107
+Nmap scan report for 192.168.28.108
+Nmap scan report for 192.168.28.109
+Nmap scan report for 192.168.28.110
+Nmap scan report for 192.168.28.111
+Nmap scan report for 192.168.28.112
+Nmap scan report for 192.168.28.113
+Nmap scan report for 192.168.28.114
+Nmap scan report for 192.168.28.115
+Nmap scan report for 192.168.28.116
+Nmap scan report for 192.168.28.117
+Nmap scan report for 192.168.28.118
+Nmap scan report for 192.168.28.119
+Nmap scan report for 192.168.28.120
+Nmap scan report for 192.168.28.121
+Nmap scan report for 192.168.28.122
+Nmap scan report for 192.168.28.123
+Nmap scan report for 192.168.28.124
+Nmap scan report for 192.168.28.125
+Nmap scan report for 192.168.28.126
+Nmap scan report for 192.168.28.127
+(every host is up)
+(redo scan for port 80
+proxychains nmap -Pn -T4 -sT -p80 192.168.28.96/27 2>/dev/null
+(only the .111 is up) (do port scan on .111 to see ports 8080=open)
+proxychains nmap -Pn -T4 -sT -p1-10000 192.168.28.105 2>/dev/null
+(running script to find http?)
+proxychains nmap -Pn -T4 -sT 192.168.28.96/27 --script http-enum.nse|smb-os-discovery.nse 2>/dev/null
+
+
