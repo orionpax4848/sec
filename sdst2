@@ -1,0 +1,29 @@
+ran with 1234 key
+fail
+
+
+ANALYZE
+searched for success  004200b8
+fun 00401170
+      iVar3 = FUN_00401060();
+      if (iVar3 == 146) {
+        FUN_00401320((wchar_t *)s_Success!_004200b8);
+        Sleep(5000);
+   fun_00401320
+   saw text file (secret3.txT) open==blank
+   
+   
+   see this
+   FUN_0040135a(local_8 ^ (uint)&stack0xfffffffc);
+  return;
+}
+        hover over 135A --- see param
+        -saw nothing
+ 
+ RegOpenKeyExA((HKEY)0x80000001,s_SOFTWARE\MICROSOFT\KEYED3_00420048,0,0xf003f,&local_20c);
+
+see this
+
+
+
+RESTART!!!
