@@ -168,3 +168,4 @@ copy shell code
       if root 
       change the whoami to command you want to run
                
+get flag
