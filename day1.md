@@ -169,3 +169,39 @@ copy shell code
       change the whoami to command you want to run
                
 get flag
+                         10.50 == NO IP A
+                         
+     ENUMERATION
+                         
+                         cat /etc/passwd --user group shell home
+                         ps -elfi &&
+                         chkconfig (sysv)
+                         systemctl --type=service (systemd)
+                         ifconfig -a 
+                         ip a
+                         net user -- local users windows
+                         tasklist /v
+                         tasklist /svc
+                         ipconfig /all
+                         
+                         
+                         
+                         
+                         
+                         1.) whoami && hostname
+                         2.) ip a
+                         3.) cat /etc/hosts
+                         4.) for i in {1..254}; do (ping -c 1 x.x.x.$i | grep "bytes from" &); done
+                         5.) LOOK AT CTF FOR NEXT COMMANDS
+                         5.) ps -elf look for rsyslog--(as an attacker) also look for script look for rkhunter
+                         6.) hail mary ls -latr /etc
+                         7.) ls -latr /var/log
+                         8.)systemctl --type=servoce --no-pager
+                         9.) ls -latr /etc/cron*     ls -latr /var/spool/crontab ls -latr /var/spool/at crontab -l
+                         10.) ls -latr tmp ls -latr ~ 
+                         11.) sudo -l 
+                         12.) cat /etc/group
+                         13.) less /etc/rsyslog.conf 
+                         14 ) less /etc/rsyslog.d/(each log)
+                         scp -o "ControlPath=/tmp/young" dummy:/home/student/not_real.txt .
+                         scp -o "ControlPath=/tmp/young" .no_the_codes.txt anything:/home/student/my_upload
