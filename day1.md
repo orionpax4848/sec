@@ -184,9 +184,31 @@ get flag
                          tasklist /svc
                          ipconfig /all
                          
+                         comrade@lin:~$ cat /etc/cron.hourly/startscript 
+
                          
-                         
-                         
+                         tcpdump: listening on ens3, link-type EN10MB (Ethernet), capture size 262144 bytes
+16:58:15.787073 IP (tos 0x0, ttl 64, id 48908, offset 0, flags [DF], proto TCP (6), length 60)
+    192.168.150.253.43462 > 192.168.56.1.514: Flags [S], cksum 0x507e (incorrect -> 0xa93e), seq 635468960, win 64860, options [mss 1410,sackOK,TS val 3400677451 ecr 0,nop,wscale 7], length 0
+	0x0000:  4500 003c bf0c 4000 4006 2b60 c0a8 96fd
+	0x0010:  c0a8 3801 a9c6 0202 25e0 7ca0 0000 0000
+	0x0020:  a002 fd5c 507e 0000 0204 0582 0402 080a
+	0x0030:  cab2 384b 0000 0000 0103 0307
+16:58:49.067085 IP (t
+  
+  
+  
+  os 0x0, ttl 64, id 48909, offset 0, flags [DF], proto TCP (6), length 60)
+    192.168.150.253.43462 > 192.168.56.1.514: Flags [S], cksum 0x507e (incorrect -> 0x273f), seq 635468960, win 64860, options [mss 1410,sackOK,TS val 3400710730 ecr 0,nop,wscale 7], length 0
+	0x0000:  4500 003c bf0d 4000 4006 2b5f c0a8 96fd
+	0x0010:  c0a8 3801 a9c6 0202 25e0 7ca0 0000 0000
+	0x0020:  a002 fd5c 507e 0000 0204 0582 0402 080a
+	0x0030:  cab2 ba4a 0000 0000 0103 0307
+
+2 packets captured
+2 packets received by filter
+0 packets dropped by kernel
+
                          
                          1.) whoami && hostname
                          2.) ip a
@@ -200,7 +222,7 @@ get flag
                          9.) ls -latr /etc/cron*     ls -latr /var/spool/crontab ls -latr /var/spool/at crontab -l
                          10.) ls -latr tmp ls -latr ~ 
                          11.) sudo -l 
-                         12.) cat /etc/group
+                         12.) cat /etc/groupwho 
                          13.) less /etc/rsyslog.conf 
                          14 ) less /etc/rsyslog.d/(each log)
                          scp -o "ControlPath=/tmp/young" dummy:/home/student/not_real.txt .
