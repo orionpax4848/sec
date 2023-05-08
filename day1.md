@@ -227,3 +227,16 @@ get flag
                          14 ) less /etc/rsyslog.d/(each log)
                          scp -o "ControlPath=/tmp/young" dummy:/home/student/not_real.txt .
                          scp -o "ControlPath=/tmp/young" .no_the_codes.txt anything:/home/student/my_upload
+	
+	
+	
+	
+	order of searched dll's
+Search OrderExecutables check the following locations (in successive order): 
+	HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs
+	The directory the the Application was run fromThe directory specified in in the C+ function GetSystemDirectory()
+	The directory specified in the C+ function GetWindowsDirectory()
+	The current directory
+	
+	TO SEE invoke level ---sigcheck.exe -m C:\Windows\System32\calc.exe
+	
