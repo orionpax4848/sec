@@ -1,0 +1,536 @@
+Lindner
+LILE-003-M
+http://10.50.20.250:8000/ ctfd
+http://10.50.21.3/classinfo.html
+
+Stack Number 	8	
+Username	LILE-003-M	
+Password	XBC4Xq6BYExYjhi	budder1234
+lin.internet	10.50.27.222		student:budder1234	XBC4Xq6BYExYjhi
+
+jump-box 10.50.27.222
+student
+budder1234	XBC4Xq6BYExYjhi
+
+
+linops	10.50.23.130
+student 
+Alexandria620!!
+
+
+Winops	10.50.23.188
+xfreerdp /v:10.50.23.188 /u:student +clipboard +dynamic-resolution +glyph-cache
+password
+
+VTA
+lewis.j.lindner00
+AlexandriaMinnesota33!!
+
+-----------------------------------------------------------------------------------------
+## Penetration Testing
+-----------------------------------------------------------------------------------------
+Phase 1: Mission Definition
+	Define goals and targets
+	Determine Scope of mission
+
+Phase 2: Recon
+
+Phase 3: FootPrinting
+
+Phase 4: Exploitation & Initial Access
+
+Phase 5: Post-Exploitation
+
+
+
+#### Formalized Reporting
+Reporting is important
+	Executive Summary
+		Results and Why, High-level, non-technical
+	Technical Summary
+		OPnotes/What you did, technical details, in the weeds
+
+
+
+
+-----------------------------------------------------------------------------------------
+## Reconnaissance
+-----------------------------------------------------------------------------------------
+Open Source Intel (OSINT)
+	addressing a specific intelligence requirement
+
+Collection
+	Defined by mission scope, don't collect too much
+	scp -> pretty much the only way to collect
+
+HTML
+	Client-side interpretation (web browser)
+	Utilizes elements (identified by tags)
+	Typically redirects to another page for server-side interaction
+	Cascading Stylesheets (CSS) for page themeing
+
+
+Scanning
+	Host Discovery
+		Ping Sweep
+		for i in {1..254}; do (ping -c 1 192.168.28.$i | grep "bytes from" &); done
+	Port Enumeration
+		NMAP
+	Port Interrogation
+		nc banner grab
+
+
+
+
+
+-----------------------------------------------------------------------------------------
+## Exploit Research
+-----------------------------------------------------------------------------------------
+    Understand Initial Access
+    Understand process to conduct research to pair vulnerability with an exploit
+    
+#### Initial Access
+	Phishing is the most common method
+	spear phishing - specific demographic, can still be done to a lot of people
+	whaling - targeting like 1 important person
+	
+Transition from recon to attack
+	find vulnerability -> pair it with an exploit
+	
+Research
+	Open Source
+	Organizational Capabilities - in house developed
+
+Capabilities
+	Mission Objectives drives requirements
+		Collection
+		Effects - attack
+	Additional Functionality to fulfill requirements
+	Communications Security (COMSEC)
+
+Plan
+	Plan what to do
+Test
+	Test tools and exploits on a replicated environment so as to not break machines
+https://cve.mitre.org/
+https://www.exploit-db.com/
+
+
+
+-----------------------------------------------------------------------------------------
+## Web Exploitation Cross site scripting
+-----------------------------------------------------------------------------------------
+HTTP
+tcpdump/wireshark can view HTTP traffic
+
+HTTP Methods:
+GET
+POST
+HEAD - transfer status and header info
+PUT - Creating/Updating, appending or changing
+
+HTTP Response Codes:
+    10X == Informational
+    2XX == Success
+    30X == Redirection
+    4XX == Client Error
+    5XX == Server Error
+https://tools.ietf.org/html/rfc2616
+
+User-Agent string lookup
+https://user-agents.net/lookup
+
+Wget
+    Recursively download
+    Recover from broken transfers
+    SSL/TLS support
+
+wget -r -l2 -P /tmp ftp://ftpserver/
+wget --save-cookies cookies.txt --keep-session-cookies --post-data 'user=1&password=2' https://website
+wget --load-cookies cookies.txt -p https://website/interesting/article.php
+
+
+cURL
+    Not recursive
+    Can use pipes
+    Upload ability
+    Supports more protocols vs Wget, such as SCP & POP3
+
+curl -o stuff.html https://web.site/stuff.html
+curl 'https://web.site/submit.php' -H 'Cookie: name=123; settings=1,2,3,4,5,6,7' --data 'name=Stan' | base64 -d > item.png
+
+#### Every site has this 	Enumeration
+/robots.txt
+Shows options about the site, mostly metadata
+
+nikto v -h <IP>
+can be used to view webpage information
+
+
+#### Cross-site Scripting XSS
+Insertion of code into a webpage, that executes in the browser of visitors <-
+
+Reflected XSS - Most common form of XSS
+    Transient, occurs in error messages or search results
+    Delivered through intermediate media, such as a link in an email
+    Characters that are normally illegal in URLs can be Base64 encoded
+    Not Persistent, nothing gets stored on the server
+
+Stored XSS
+    Resides on vulnerable site
+    Persistent
+    ONLY REQUIRES USER TO VISIT PAGE
+    
+<img src="http://invalid" onerror="window.open('http://10.50.XX.XX:8000/ram.png','xss','height=1,width=1');">
+
+Find vulnerable website
+inject code
+copy link
+send it out
+
+
+Malicious File Upload
+Site allows unsanitized file uploads
+    Server doesn’t validate extension or size
+    Allows for code execution (shell)
+    Once uploaded
+        Find your file
+        Call your file
+
+
+-----------------------------------------------------------------------------------------
+## SQL injection
+-----------------------------------------------------------------------------------------
+https://www.w3schools.com/SQL/sql_syntax.asp
+*SELECT		Extracts data from a database
+*UNION			Used to combine the result-set of two or more SELECT statements
+USE			Selects the DB to use
+UPDATE			Updates data in a database
+DELETE			Deletes data from a database
+CREATE DATABASE	Creates a new database
+ALTER DATABASE		Modifies a database
+CREATE TABLE		Creates a new table
+ALTER TABLE		Modifies a table
+DROP TABLE		Deletes a table
+CREATE INDEX		Creates an index (search key)
+DROP INDEX		Deletes an index
+
+database = schema
+3 defaults:	Never look into these
+	information_schema
+	mysql
+	performance_schema
+
+Databases contain tables:
+	referenced with dot notation
+	database.table
+tables contain columns:
+
+SQL INJECTIONS:
+Requires Valid SQL Queries
+SQL TEST STATEMENT:	' OR 1 = '1
+
+Stacking Statements:
+use ; to chain multiple statements
+asdf'; DROP TABLE Customers; #
+
+
+Abuse The Client (GET METHOD)
+	Passing injection through the URL:
+	After the .php?item=4 pass your UNION statement
+	prices.php?item=4 UNION SELECT 1,2,@@version
+
+GOLDEN STATEMENT:
+UNION SELECT table_schema,table_name,column_name FROM information_schema.columns;#
+
+
+
+-----------------------------------------------------------------------------------------
+## Reverse Engineering
+-----------------------------------------------------------------------------------------
+Assembly:
+There are 16 general purpose 64-Bit registers
+e=32bit
+r=64bit
+
+%rax		the first return register
+
+%rbp		the base pointer that keeps track of the base of the stack
+
+%rsp		the stack pointer that points to the top of the stack
+
+You will see arguments passed to functions as something like:
+[%ebp-0x8]
+
+
+Heap			Memory that can be allocated and deallocated
+Stack			A contiguous section of memory used for passing arguments
+General Register	A multipurpose register that can be used by either programmer or user to store data or a memory location address
+Control Register	A processor register that changes or controls the behavior of a CPU
+Flags Register		Contains the current state of the processor
+
+## Assembly
+
+MOV		move source to destination
+PUSH		push source onto stack
+POP		Pop top of stack to destination
+INC		Increment source by 1
+DEC		Decrement source by 1
+ADD		Add source to destination
+SUB		Subtract source from destination
+LEA		load effective address, basically mov
+
+CMP		Compare 2 values by subtracting them and setting the %RFLAGS register. ZeroFlag set means they are the same. (compares via difference)
+JMP		Jump to specified location in memory
+JLE		Jump if less than or equal
+JNZ		Jump if not zero (so if they aren't the same)
+JE		Jump if equal
+JZ		Jump if Zero
+
+
+Workflow:
+Static			Run the malware, see what happens
+Behavioral		Use tools to see how it runs and what it does
+Dynamic		check for ports and other things that happen
+Disassembly		read assembly
+Document Findings	document :)
+
+Every C or C++ will contain main (must have Main: function to work)
+Portable Executable Patching / Software Analysis
+    Perform Debugging and Disassembly
+    Find the Success/Failure
+    Adjust Instructions
+    Apply Patch and Save
+    Execute Patched Binary
+
+
+-----------------------------------------------------------------------------------------
+## Exploit Development
+-----------------------------------------------------------------------------------------
+Buffer Overflow:
+Heap - Memory that can be allocated and deallocated
+Stack - A contiguous section of memory used for passing arguments
+Registers - Storage elements as close as possible to the central processing unit (CPU)
+Instruction Pointer (IP) - a.k.a Program Counter (PC), contains the address of next instruction to be executed
+Stack Pointer (SP) - Contains the address of the next available space on the stack
+Base Pointer (BP) - The base of the stack
+FunctionCode - that is separate from the main program that is often used to replace code the repeats in order to make the program smaller and more efficient
+Shellcode - The code that is executed once an exploit successfully takes advantage of a vulnerability
+
+Linux Exploit Development
+GDB - Peda
+
+pdisass <function>	# dissassemble portion of the program
+pinfo <>		# Supply info for specific stack areas
+px/256c $<REGISTER>	# Read characters from specific register
+pbreal <address>	# Establish a break point
+
+**LINUX Programs can be interacted with in 2 ways, user input or parameters**
+https://wiremask.eu/tools/buffer-overflow-pattern-generator/
+
+
+-----------------------------------------------------------------------------------------
+## Post Exploitation
+-----------------------------------------------------------------------------------------
+Local Host Enumeration
+
+Commands to run on every machine:
+User Enumeration:
+	Windows:
+		net user		#shows local users
+	Linux:
+		cat /etc/passwd	#contains users, group info, uid, home directory, shell info
+		
+Process Enumeration:
+	Windows:
+		tasklist /v		#doesn't show pids
+	Linux:
+		ps -elf		#not gospel, processes may be dynamic, htop or top
+
+Service Enumeration:
+	Windows:
+		tasklist /svc		
+	Linux:
+		chkconfig				#SysV
+		systemctl --type=service --no-pager	#SystemD
+
+Network Connection Enumeration
+	Windows:
+		ipconfig /all
+	Linux:
+		ifconfig -a
+		ip a	
+	
+Data Exfiltration:
+	session transcript:
+		ssh <user>@<host> | tee <file>
+
+	Encrypted Transport:
+		scp <source> <destination>
+
+
+---------------------------------------------------------------------------------
+## Windows Exploitation
+---------------------------------------------------------------------------------
+Recon
+Exploit Research
+Exploit Development
+Post Exploitation
+Persistence, Privilege Escalation, Covering Your Tracks
+
+
+
+DLL Search Order
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs
+The directory the the Application was run from
+The directory specified in in the C+ function GetSystemDirectory()
+The directory specified in the C+ function GetWindowsDirectory()
+The current directory
+
+Find the execution level of an executable
+PS C:\Users\student> strings C:\windows\system32\calc.exe | findstr "ExecutionLevel"
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+PS C:\Users\student> sigcheck -m C:\windows\system32\calc.exe
+
+
+#### Privilege Escalation ####
+Scheduled Tasks & Services
+Items to evaluate include:
+    Write Permissions
+    Non-Standard Locations
+    Unquoted Executable Paths
+    Vulnerabilities in Executables
+    Permissions to Run As SYSTEM
+schtasks /query /fo LIST /v | select-string -Pattern "Task To Run" -CaseSensitive | select-string -pattern "COM Handler" -NotMatch
+
+
+#### Persistence ####
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\
+        Run
+        RunOnce
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\
+        Run
+        RunOnce
+
+Scheduled Tasks
+            Permission Levels Considerations
+
+Services
+    At Startup
+    Perform Multiple Functions
+    Typically require Administrative Access
+
+
+#### Covering Tracks/Clearing Logs ####
+    Artifacts
+        Determine which events will create a log
+        Event Logs
+            Applications, Security, Setup, System
+    Blending In
+    TimeStomping
+
+
+System usage
+    Where should you run commands from?
+            Are you commands going to bog down/create weird benchmarks on the machine?
+
+Logs:
+    Show all audit category settings
+        auditpol /get /category:*
+    success and failed logs (logins?)
+        auditpol /get /category:* | findstr /i "success failure"
+Event IDs
+4624/4625 Successful/failed login
+4720 Account created
+4672 Administrative user logged on
+7045 Service created
+
+---------------------------------------------------------------------------------
+## Linux Exploitation
+---------------------------------------------------------------------------------
+#### Privilege Escalation ####
+If you can't escalate Upward, Try laterally
+
+sudo is privilege escalation
+	sudo -l
+	sudo cat /etc/shadow
+	sudo apt-get
+	sudo vim
+https://gtfobins.github.io/
+
+
+SUID4/SGID2:
+	Run as User Owner or Group Owner of the file
+
+
+Insecure Permissions:
+	cronjobs/create them
+	World-Writable Files and Direcotires: /tmp
+	Dot '.' the Path Variable
+
+
+
+
+Vulnerable Software and Services:
+	*Non-Standard* programs will need to be fuzzed and exploited
+	
+
+
+#### Persistence ####
+	Adding or hijacking a user account
+	Adding or modifying a CRON job
+
+
+
+
+#### Covering Your Tracks ####
+Logs
+	Plan and Clean
+
+Artifacts
+	Indicators of compromise
+
+System Usage
+	
+NIX-ism
+	unset HISTFILE
+	SystemD
+
+
+Logs for Covering Tracks
+Logs typically housed in /var/log & useful logs:
+	auth.log/secure	Logins/authentications
+	lastlog		Each users' last successful login time
+	btmp			Bad login attempts
+	sulog			Usage of SU command
+	utmp			Currently logged in users (W command)
+	wtmp			Permanent record on user on/off
+
+Reading Logs:
+	tail -n 50
+	awk
+	egrep -v
+
+Cleaning Log:
+	Make A Copy of the Log File -> Edit It -> Replace It
+
+
+Always work off a backup!
+GREP (Remove)
+	egrep -v '10:49*| 15:15:15' auth.log > auth.log2; cat auth.log2 > auth.log; rm auth.log2
+
+SED (Replace)
+	cat auth.log > auth.log2; sed -i 's/10.16.10.93/136.132.1.1/g' auth.log2; cat auth.log2 > auth.log
+
+Rsyslog
+    Newer Rsyslog references /etc/rsyslog.d/* for settings/rules
+    Older version only uses /etc/rsyslog.conf`
+    Find out
+    grep "IncludeConfig" /etc/rsyslog.conf
+
+Reading Rsyslog
+	Utilizes severity (priority) and facility levels
+	Rules filter out, and can use keyword or number
+	<facility>.<priority>
+
+

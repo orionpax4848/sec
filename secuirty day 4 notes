@@ -1,0 +1,389 @@
+#DAY 4 REVERSE ENGINEERING
+
+_____________________________________________________________________________________
+
+#ASSEMBLY
+
+	16 general based registers 
+	
+	%rax the first return register
+
+	%rbp the base pointer that keeps track of the base of the stack
+
+	%rsp the stack pointer that points to the top of the stack
+
+
+	You will see arguments passed to functions as something like:
+
+	[%ebp-0x8]
+	
+#COMMON TERMS 
+
+	Heap Memory that can be allocated and deallocated
+
+	Stack A contiguous section of memory used for passing arguments
+	
+	
+#Common Instruction Pointers:
+
+	CMP Compare 2 values by subtracting them and setting the %RFLAGS register. 			ZeroFlag set means they are the same.
+	
+	0 means same 
+	8 and 8 returns 0 true because 8 equals 8
+	
+	JMP Jump to specified location <-- specific area of memory 
+	
+	JLE Jump if less than or equal <-- jump if not the same 
+
+	Jz Jump if equal <-- jump if the same 
+	
+	
+#assembly demo
+
+
+
+	main: <---- great place to start main code need it to start two days 
+		mov rax, 16 <-- mov 16 to first value in registry 
+		push rax  <-- push it to top 16 on top rax =16 first value of stack
+		jpm mem2 <-- go to mem2 bottom
+		
+	mem1: <---
+		
+		move rax, 0 <--- return zero no errors exits 
+		ret
+		
+	mem2:
+	
+		pop r8 <-- equals 16 takes whatever on top of stack we put it on top
+				nothing on stack r8 16 edist stack 16 pops off 				of stack pop off of stack 16 into r8 
+		cmp rax, r8 <--equals 0 even though we push it 
+		jz mem1 <--- jumps because equal ifn ot error out it does jump
+
+---------------------------------------------------------------------------------
+
+	main:
+	
+		lea rcx, 25 <-- move rcx is 25 lea fancy move 
+		lea rbx, 62 <--- rbx is 62 
+		jmp mem1 <-- jumps to mem1
+			
+			
+	mem1:
+	
+		sub rbx, 40 <--sub 40 from rbx 22 it does save rbx = 22 
+		lea rsi, rbx <-- rsi equals rbx rsi 22 rbx 22 
+		cmp rcx, rsi <-- rcx 25 rsi 22 not same 1 
+		jnz mem2 <-- jump if not equal
+		jmp mem3
+		
+	mem2:
+	
+		lea rax, 1 <-- error code 1 
+		ret
+	
+	mem3:
+		
+		lea rax, 0 <-- error code 0 
+		ret
+		
+	
+	reverse engineering go backwards look for successful start there go to 		what caused it 
+	
+-----------------------------------------------------------------------------------
+
+#Reverse engineering workflow (software)
+
+	start it look for strings static 
+	behvaior 
+	behavior dynamic
+	dissamebly
+	document
+
+
+Portable Executable Patching / Software Analysis
+
+	    Perform Debugging and Disassembly
+
+	    Find the Success/Failure
+
+	    Adjust Instructions
+
+	    Apply Patch and Save
+
+	    Execute Patched Binary
+
+
+___________________________________________________________________________________
+
+#DAY $ ACTIVITIES REVERSE ENGINEERING
+
+192.168.28.111
+80
+comrade::StudentWebExploitPassword
+everything under dir longTermStorage
+
+#Assembly
+
+q1.What is %RAX and %EAX main purpose?
+
+	 They are the first return registers for x86-64 and x86
+
+q2.What is %RIP and %EIP main purpose?
+
+	%RIP/%EIP are the 64 bit and 32 bit instruction pointers that hold the 		memory address to the next instruction
+	
+q3.What is %RBP and %EBP main purpose?
+
+	%RBP/%EBP keep track of the top of the stack
+
+q4.What is %R8 size in bits?
+
+	64
+	
+q5.Which of these registers has a size of 32 bits?
+
+	%R12D
+
+q6.What register does the JE instruction rely upon?
+
+	FLAGS
+	
+q7.What flag does the JE instruction rely upon?
+
+	Zero Flag
+	
+q8.What does the CMP instruction do?
+
+	Compares 2 values via subtraction
+
+q9.What value is on the top of the stack?
+
+	25
+
+	Main:
+	   Mov R8, 25
+	   Push R8
+	   Mov R10, 50
+	   Push R10
+	   Pop RAX
+	   
+q10.What value is in the return register?
+
+	50
+	
+	Main:
+	   Mov R8, 25
+	   Push R8
+	   Mov R10, 50
+	   Push R10
+	   Pop RAX
+
+q11.What value is returned?
+
+	14
+
+	Main:
+	    Mov R9, 5
+	    Mov R10, 20
+	    Add R10, R9
+	    CMP R10, R9
+	    JE Clean
+	    Mov RAX, 14
+	    ret
+
+	Clean:
+	    Mov RAX, 0
+	    ret
+
+---------------------------------------------------------------------------------------
+
+#C Source Code
+
+q1.What does the printf() function do?
+
+	 It sends formatted output to standard out (E.g. the terminal)
+	 
+q2.What does the fgets() function do?
+
+	It reads a line from the specified stream and stores it into a character 		array
+
+q3.What does the strcmp() function do?
+
+	It compares two strings (character arrays)
+	
+q4.What is a successful return code for the strcmp() function if the two strings are the same?
+
+	0
+	
+q5.What is main()?
+
+	 It is the designated entry point to a program 
+	 
+q6.What is num1’s variable type?
+
+	int
+	
+	int main(void){
+	       int num1 = 77;
+	       printf("%d",num1);
+	       return 0;
+	}
+
+q7.What is num1’s value?
+
+	77
+	
+	int main(void){
+       int num1 = 77;
+       printf("%d",num1);
+       return 0;
+	}
+
+q8.What value is printed to the terminal upon execution?
+
+	77
+	
+	int main(void){
+       int num1 = 77;
+       printf("%d",num1);
+       return 0;
+	}
+
+q9.What is “%d” in this program?
+
+	
+	%d is a format specifier for a signed decimal/integer
+
+	int main(void){
+	       int num1 = 77;
+	       printf("%d",num1);
+	       return 0;
+	}
+
+q10.What is important about “return 0”?
+
+	int main(void){
+       int num1 = 77;
+       printf("%d",num1);
+       return 0;
+	}
+
+q11.What is returned to stdout when executed?
+
+	different
+	
+		
+	int main(void){
+	     char word1[4] = “word”;
+	     char word2[5] = “words”;
+	     if(strcmp(word1,word2)==0){
+	     printf(“same”);
+	  }
+	  else{
+	     printf(“different”);
+	  }
+	}
+		
+		
+--------------------------------------------------------------------------------------
+
+#Binary Analysis
+
+q1.What is the key for this binary?		
+	entry.exe
+	
+	runs it enter key: 
+	run codebrowser 
+	import file anylizse 
+	window decomplier listing 
+	serach enter key
+	find the value bottom up wehat cuases a success find the function in 	listing 
+	123@magicKey		
+		
+q2.Add the value of all of the keys together. What is the MD5 hash of this sum?		
+		
+	92,138,184,230,276,322,368,414,460,506 = 2990
+	followed the stream of functions till found the if loop breaks at 12 
+	2 * 46 and increments 
+	79bc18f6cbd3b2290cbd69c190d62bc6	
+		
+q3.Run the executable with expected input and retrieve success message.sdst3.exe
+Enter the complete name of one of the items used to determine the success of the binary's execution.		
+		
+	ENV11	
+	
+q4.What is the MD5 hash of the key (specifically the value and not location) that the program required?sdst.exe
+
+	press enter key: 9524 <--- invalid key 
+	var1 + var2 = 17535 - 8011 <-- found in list 
+	secret file value of those values being opned 
+	4c8b12c6485fc0b4ebae47a30f49ca0c	
+	got edit file while malware is open put 95245 value and press enter 
+	because oncve press enter it reads the file 
+		
+q5.disassemble the executable and follow the program’s execution to discover its functionality, and expected input sdst2.exe		
+
+	
+	start malware press enter key:
+	closes after invalid
+	open malware in code browser anylze it open up search found function for 		success
+	iVar3 == 146
+	 
+	three parts: 
+	
+	registry local_208 SOFTWARE\MICROSOFT\KEYED3 <-- regedit 
+	file local_108 <-- users/public/desktop/documnets/secret3
+	compare statement
+	
+	compare both variables if equals not zero invalid but returns success if 		equal so if make registry value and file both the same and run the malware 		its works
+	
+	
+Software Doing Software Things 3 - Part 1
+q6.Run the executable with expected input and retrieve success message.	
+sdst3.exe What value determines successful execution of the binary?may break headers are important
+	
+	18765
+	
+q7.compiled executable: (patching.exe)
+Task: Provide a patched executable that displays a "Successful" message for every key entered Method: Utilize RE toolset provided to patch additional or modified functionality to the binary
+
+	fix the code in the listing so the it doesnt return 12 but 13529
+	
+q8.compiled executable: (controller4.exe)
+Task: Provide the symmetric key used during decryption of the payload in ASCII.
+Method: Utilize RE toolset to reverse engineer the given binary finding where and how the symmetric key is used.
+
+  
+  local_2d4 = 1131193;
+  
+  for (local_2d8 = 0; local_2d8 < 101; local_2d8 = local_2d8 + 1) {
+    local_2d4 = local_2d4 * 161599;
+  }
+
+  
+ 
+int('{:032b}'.format(b)[-32:],2)
+  
+    
+    x=int('{:032b}'.format(12759753202041183951192875584933574935150903453531949694855451703941242911230200641916592982566622388902855796706061408099347584026980992105805812075306974784724463471911631457350326727980731978560907314971439321034653082931668480003803179419270566072254019061139373445471003679545704184846479057183931998177596224619027759499235859671210968446680241291167666710129790219670746893453018923826826783810632092169870534344868640729169636852739839048222316573194783887063493718773925944445033655632416068297477099247856542916550174537607)[-32:],2)
+
+print(x)  
+fruits = 0
+mans = 1131193
+x = 101
+
+while fruits < x: 
+  	fruits = fruits + 1 
+  	mans *= 161599
+  	print(mans)
+
+  
+
+    
+    
+    
+    
+    
+    
+    
+

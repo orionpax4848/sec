@@ -1,0 +1,265 @@
+
+stack # username 	password 		lin.internet/grey host
+13 	YOPA-003-M 	Orionpax (ctf) 	10.50.33.213 (LINOPS)
+
+			password on grey host
+
+
+	userinfo http://10.50.21.3/classinfo.html
+	ctfd http://10.50.20.250:8000/
+
+___________________________________________________________________________________
+jump box:
+	ssh -X student@10.50.30.37
+	password
+___________________________________________________________________________________
+vta:
+
+	https://vta.cybbh.space/horizon/project/instances/
+	patrick.b.young64
+	Orionpax
+	ipa
+____________________________________________________________________________________
+linux-ops station:
+
+	linux ops station instances 10.50.34.194
+	student password
+	root password
+_______________________________________________________________________________
+windows-ops station:
+
+	ssh student@10.50.33.232 -X
+	password
+
+______________________________________________________________________________________
+
+
+#DAY 1 PENETRATION TESTING OVERVIEW
+
+_________________________________________________________________________________
+______________________________________________________________________________________
+#steps for APT:cyber kill chain
+_____________________________________________________________________________________
+1.reconnaissance last leanred but first done
+#scanning and reconnaissance
+
+   	web scraping
+   		ssh -S /tmp/jump -O forward -D 9050 dummy
+   		ssh -S /tmp/jump -O forward -L1120:192.168.28.111:80 DUMB
+		ssh -S /tmp/jump -O forward -L1130:192.168.28.111:8080 DUMB
+   		change scraping script to match url http://127.0.0.1:<port>
+   		open firfox type url above
+   		can right click read source view
+   		when scraping '//<mainclass>[@<class>="<stuff>"]/text()'
+
+   	multiplexing tunnels 				-D 9050
+   		ssh -MS /tmp/jump student@10.50.20.233 <-- to jump sets file
+   		ssh -S /tmp/jump dummy <-- no authenticate on jumps need 						placeholder no log
+   		ssh -S /tmp/jump -O forward -D 9050 dummy <-- dymic tunnel
+   		ss -ntlp <-- 9050 listening
+   		proxychains nmap -Pn -T4 -n -p1-10000 192.168.28.111 <-- ping sweep
+   		ssh -S /tmp/jump -O cancel -D 9050 dummy <-- closes tunnel
+   		ssh -S /tmp/jump -O forward -L1120:192.168.28.111:80 DUMB
+		ssh -S /tmp/jump -O forward -L1130:192.168.28.111:8080 DUMB
+		nc localhost port
+		asf
+		ssh -S /tmp/jump -O forward -L1140:192.168.28.111:2222 DUMB
+		ssh -MS /tmp/T1 root@127.0.0.1 -p1140
+		proxychains nc 192.168.28.111 8080
+		proxychains nmap -Pn -T4 -sT -p80 192.168.28.111 --script 			http-enum.nse <--- smb-os-discovery.nse <-- only for windows 					susports
+
+
+	advanced scanning teachniques:
+
+		1.Host discovery <-- find host
+		2.port enumeration <--- find ports
+		3.port interrogation <-- service on each port
+
+	ping scann:
+
+		for i in {1..254}; do (ping -c 1 192.168.28.$i | grep "bytes 			from" &); done
+_____________________________________________________________________________________
+2.weaponization
+#Vulnerability and exploitation resaerch
+
+	initial access
+
+		most common method of intial access:
+
+			phishing
+			spear phishing <--- targeted
+			whale phishing <--- higher ups
+
+	introduction to exploit research
+
+		transition from reconnaissance to weapinization
+		leverage intelligence/data about network
+		pair vulnerabilities to exploits
+		align exploits to operational objectives
+
+	Capabilities
+
+		mission objectives drive requirements
+			collection <--- watch
+			effects <--- attack
+		additional functionality to fulfill requirements
+		communications security (COMSEC)
+
+	Testing:
+
+		exploit development occurs from vulnerability pairing and 			mission-drivens requirement
+		test and verify success
+		testing provides a number of benefits
+		faster time to breakout of initial foothold
+		reduced risk of detection and/ or tool failure
+		improved recovery times
+
+	Plan:
+
+		Procure Hardware and software
+		Assign developer
+		Assign a tester to develop TTPs and break it
+		Document testing results
+		Testing environment
+
+_____________________________________________________________________________________
+
+
+
+
+
+
+
+	3.delivery
+
+	4.exploitation
+
+	5.installation
+
+	6.command and control (c2)
+
+	7.actions on objectives
+
+
+
+
+
+
+
+___________________________________________________________________________________
+
+#DAY 1 ACTIVITIES:
+#EXPOIT RESEARCH
+
+	network scan 192.168.28.96/27
+	network scan 192.168.150.224/27
+
+	Known URL: consulting.site.donovia
+	Known URL: conference.site.donovia
+
+q1.What CVE is associated with ASA 5500 if WebVPN is enabled on the interface and accessible? (enter only the numbers)
+
+	2018-0101
+
+q2.What type of vulnerability does this CVE address?
+
+	Remote Code
+
+q3.The NIST assigned this CVE what base score?
+ --- 192.168.28.111 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+	10
+
+q4.There is a proof of concept named crash that was created. What ID was assign to it by Offensive Security?
+
+	googled the whole question
+	43986
+
+q5.What recent Windows vulnerability dealt with a issue were the user could overwrite the PrintConfig.dll prior to 2019?
+
+	Windows ALPC Elevation of Privilege Vulnerability
+	2018-8440
+
+q6.What is the name of the person that discovered the vulnerability?
+
+	Author/handle of exploit developer
+	SandboxEscaper
+
+q7.What function/method does this vulnerability take advantage of?
+
+	SchRpcSetSecurity
+
+q8.Which technique is most used to gain initial access?
+
+	phishing
+
+_________________________________________________________________________
+
+#RECONNAISSNACE
+
+	q1.File Transfer Protocol (FTP) appears to be available within Donovian Cyberspace, perform further reconnaissance and interrogate this service to identify the flag.
+
+	ssh -MS /tmp/jump student@10.50.20.233
+	ssh -S /tmp/jump -O forward -D 9050 dummy
+	ping sweep using for long
+	then nmap each ip 105 has ftp open
+	proxychains wget -r ftp://192.168.28.105
+	bbI3lhzHjwHxkYctjQz1
+
+	q2.Intelligence shows that the Donovian Government is preparing for a conference, you have been tasked to collect all information relating to the speakers.
+
+	through paqssive recon aka nmap scans te .111 is the one with ssh 2222
+	port 80 and port 8080 one
+	set up multiplex local forward to all open ports with dynmic tunnel
+	in liniux ops firefox http://127.0.0.1:1140 <-- port for forward
+	notice missing speaker name
+	in scraping script chnage teh following
+	 page = requests.get('http://127.0.0.1:1130')
+	 tags = tree.xpath('//h2[@class="text-white mb-4 name"]/text()')
+	aQ2GWBIYQmOGB8BCuYxx
+
+	q3.There is some STRONG text within the Donovian Conference News that needs to be collected. It will provide the flag to our operations.
+
+
+	go to the source page ctfl f news
+	then click on link
+	ctrl f STRONG went down till i found it
+	o3Wt3jR9ILi8vOrvqr5e
+
+	q4.Intelligence suggests that the Donovian Consulting Group appears to have sensitive contacts available on their public facing site. Scrape the data and piece together the flag.
+
+	i honestly dont knwo just look around i guess untill find contacts
+	literally no clue
+	 page = requests.get('http://127.0.0.1:1120/sites/NSC-Contacts.html')
+	 tags = tree.xpath('//td[@class="f1aG"]/text()')
+	 grep for the parts combine
+	4RpBXuK83yInAJ6dtgZV
+
+	q5.A company has posted an article to Donovian Consulting Groups blog, Identify the flag associated with the company.
+
+	view-source:http://127.0.0.1:1120/sites/index.html
+	just crtfl f for org-title till find flag
+
+	q6.Your team has received intelligence related to Server Message Block being available. Identify the host and associated flag.
+
+	on ftp .105 cat server inization got using dynmiac and wget
+	PassTemporary
+	loginfirst
+	logout null bit
+	houseBeatFliesLOW
+	YourTempPassword
+	ssh -S /tmp/jump -O forward -L1160:192.168.28.111:2222 DUMB
+	ssh -MS /tmp/T1 student@127.0.0.1 -p1140
+	YourTempPassword <-- give access via .120
+	set dynmic tunnel yout moms puusy  1160
+	64 bytes from 192.168.150.225: icmp_seq=1 ttl=64 time=0.894 ms
+	64 bytes from 192.168.150.226: icmp_seq=1 ttl=63 time=0.752 ms
+	64 bytes from 192.168.150.227: icmp_seq=1 ttl=63 time=2.25 ms
+	64 bytes from 192.168.150.245: icmp_seq=1 ttl=127 time=1.81 ms
+	64 bytes from 192.168.150.253: icmp_seq=1 ttl=63 time=2.49 ms
+	proxychains nmap -Pn -sT -T4 192.168.150.225,226,227,245,253 --script 	smb-os-discovery
+
+
+	q7.Find the Titles of all the hosted web servers, identify which one has the flag.
+
+	title is falg of port1130 of all of them

